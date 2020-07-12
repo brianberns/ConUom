@@ -1,5 +1,6 @@
 ﻿namespace ConUom
 
+[<StructuredFormatDisplay("{String}")>]
 type Expr =
     | Const of decimal
     | Var
@@ -7,6 +8,24 @@ type Expr =
     | Difference of Expr * Expr
     | Product of Expr * Expr
     | Quotient of Expr * Expr
+
+    member this.String =
+
+        let toChar = function
+            | Sum _ -> '+'
+            | Difference _ -> '-'
+            | Product _ -> '*'
+            | Quotient _ -> '/'
+            | _ -> failwith "Unexpected"
+
+        match this with
+            | Const n -> sprintf "%M" n
+            | Var -> "x"
+            | Sum (exprA, exprB)
+            | Difference (exprA, exprB)
+            | Product (exprA, exprB)
+            | Quotient (exprA, exprB) ->
+                sprintf "(%A %c %A)" exprA (toChar this) exprB
 
 module Expr =
 

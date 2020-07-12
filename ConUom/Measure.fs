@@ -18,17 +18,53 @@ module Measure =
             Unit = unit
         }
 
-    let simplify measure =
+    let rec private exp (x : decimal) (y : int) =
+        match y with
+            | 0 -> 1m
+            | 1 -> x
+            | _ ->
+                if y > 1 then
+                    x * (exp x (y - 1))
+                else
+                    failwith "Unexpected"
 
-        let rec loop outer = function
-            | DerivedUnit (unit, inner, _) ->
-                loop (Expr.subst outer inner) unit
-            | unit -> outer, unit
+    let rec build outer = function
+        | DerivedUnit (unit, inner, _) ->
+            build (Expr.subst outer inner) unit
+        | PowerUnit (DerivedUnit (unit, inner, _), power) ->   // e.g. x ft^2 = 2.54^2*x cm^2
+            let expr =
+                match inner with
+                    | Product (Const x, Var)
+                    | Product (Var, Const x) ->
+                        Product (Const (exp x power), Var)
+                    | Quotient (Var, Const x) ->
+                        Quotient (Var, Const (exp x power))
+                    | _ -> failwith "Unexpected"
+                    |> Expr.subst outer
+            let unit' =
+                PowerUnit (unit, power)
+            build expr unit'
+        | unit -> outer, unit
 
-        let expr, unit = loop Var measure.Unit
+    let private simplify measure =
+
+        let expr, unit = build Var measure.Unit
 
         create
             (expr |> Expr.eval measure.Value)
+            unit
+
+    let convert unit measure =
+
+        let measure' = simplify measure
+
+        let expr, unit' = build Var unit
+        if unit' <> measure'.Unit then
+            failwithf "'%A' and '%A' are incompatible units" unit' measure.Unit
+        let expr' = Expr.invert expr
+
+        create
+            (expr' |> Expr.eval measure'.Value)
             unit
 
     let product measA measB =

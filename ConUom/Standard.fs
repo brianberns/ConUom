@@ -2,8 +2,6 @@
 
 module Standard =
 
-    open Unit
-
     let centi = Quotient (Var, Const 100m)
 
     module SI =
@@ -24,3 +22,4 @@ module Standard =
         let ft = feet
 
         let gallon = DerivedUnit (inch ^ 3, Product (Var, Const 231m), "gal")
+        let gal = gallon

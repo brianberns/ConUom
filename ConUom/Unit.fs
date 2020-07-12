@@ -5,10 +5,10 @@ type BaseDimension =
 
 [<StructuredFormatDisplay("{String}")>]
 type Unit =
-    | BaseUnit of BaseDimension * string  // e.g. m
-    | PowerUnit of (Unit * int)           // e.g. m^3
-    | ProductUnit of (Unit * Unit)        // e.g. N m
-    | DerivedUnit of Unit * Expr * string
+    | BaseUnit of BaseDimension * string    // e.g. m
+    | PowerUnit of (Unit * int)             // e.g. ft^3
+    | ProductUnit of (Unit * Unit)          // e.g. N m
+    | DerivedUnit of Unit * Expr * string   // expr converts from outer unit to inner unit
 
     member this.String =
         match this with
@@ -28,7 +28,18 @@ module Unit =
         if unitA = unitB then
             PowerUnit (unitA, 2)
         else
-            ProductUnit (unitA, unitB)
+            match unitA, unitB with
+                | _, PowerUnit (unit, power) ->
+                    if unitA = unit then
+                        PowerUnit (unit, power + 1)
+                    else
+                        ProductUnit (unitA, unitB)
+                | PowerUnit (unit, power), _ ->
+                    if unitB = unit then
+                        PowerUnit (unit, power + 1)
+                    else
+                        ProductUnit (unitA, unitB)
+                | _ -> ProductUnit (unitA, unitB)
 
 [<AutoOpen>]
 module UnitAutoOpen =
