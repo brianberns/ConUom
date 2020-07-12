@@ -17,22 +17,19 @@ type Unit =
             | ProductUnit (unitA, unitB) -> sprintf "%A %A" unitA unitB
             | DerivedUnit (_, _, name) -> name
 
-[<AutoOpen>]
 module Unit =
 
-    let (^) unit = function
+    let power unit = function
         | 0 -> failwith "Invalid argument"
         | 1 -> unit
         | n -> PowerUnit (unit, n)
 
-    let centi = Quotient (Var, Const 100m)
+    let product unitA unitB =
+        if unitA = unitB then
+            PowerUnit (unitA, 2)
+        else
+            ProductUnit (unitA, unitB)
 
-    let meter = BaseUnit (Length, "m")
-    let m = meter
-
-    let centimeter = DerivedUnit (meter, centi, "cm")
-    let cm = centimeter
-
-    let inch = DerivedUnit (centimeter, Product (Var, Const 2.54m), "in")
-
-    let gallon = DerivedUnit (inch ^ 3, Product (Var, Const 231m), "gal")
+[<AutoOpen>]
+module UnitAutoOpen =
+    let (^) = Unit.power
