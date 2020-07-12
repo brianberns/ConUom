@@ -10,24 +10,34 @@ type Expr =
 
 module Expr =
 
-    let op = function
-        | Sum _ -> (+)
-        | Difference _ -> (-)
-        | Product _ -> (*)
-        | Quotient _ -> (/)
-        | _ -> failwith "Unexpected"
+    let eval n expr =
 
-    let rec eval n = function
-        | Const c -> c
-        | Var -> n
-        | Sum (exprA, exprB)
-        | Difference (exprA, exprB)
-        | Product (exprA, exprB)
-        | Quotient (exprA, exprB) as expr ->
-            let op = op expr
-            op (eval n exprA) (eval n exprB)
+        let op = function
+            | Sum _ -> (+)
+            | Difference _ -> (-)
+            | Product _ -> (*)
+            | Quotient _ -> (/)
+            | _ -> failwith "Unexpected"
+
+        let rec loop = function
+            | Const c -> c
+            | Var -> n
+            | Sum (exprA, exprB)
+            | Difference (exprA, exprB)
+            | Product (exprA, exprB)
+            | Quotient (exprA, exprB) as expr ->
+                (op expr) (loop exprA) (loop exprB)
+
+        loop expr
 
     let invert expr =
+
+        let opposite = function
+            | Sum _ -> Difference
+            | Difference _ -> Sum
+            | Product _ -> Quotient
+            | Quotient _ -> Product
+            | _ -> failwith "Unexpected"
         
         let rec containsVar = function
             | Const _ -> false
@@ -38,13 +48,6 @@ module Expr =
             | Quotient (exprA, exprB) ->
                 containsVar exprA || containsVar exprB
 
-        let invert = function
-            | Sum _ -> Difference
-            | Difference _ -> Sum
-            | Product _ -> Quotient
-            | Quotient _ -> Product
-            | _ -> failwith "Unexpected"
-
         let rec loop left right =
             match left with
                 | Const c -> failwith "Unexpected"
@@ -53,12 +56,12 @@ module Expr =
                 | Difference (leftA, leftB)
                 | Product (leftA, leftB)
                 | Quotient (leftA, leftB) ->
-                    let inv = invert left
+                    let opp = opposite left
                     match containsVar leftA, containsVar leftB with
                         | true, false ->
-                            loop leftA (inv (right, leftB))
+                            loop leftA (opp (right, leftB))
                         | false, true ->
-                            loop leftB (inv (right, leftA))
+                            loop leftB (opp (right, leftA))
                         | _ -> failwith "Unexpected"
 
         loop expr Var
