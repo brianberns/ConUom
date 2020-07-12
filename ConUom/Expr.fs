@@ -29,7 +29,30 @@ type Expr =
             | Quotient (exprA, exprB) ->
                 sprintf "(%A %c %A)" exprA (toChar this) exprB
 
+[<AutoOpen>]
+module BigRationalExt =
+
+    open System
+    open System.Numerics
+
+    type BigRational with
+
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.decimal.getbits
+        static member FromDecimal(n : decimal) =
+            let parts = Decimal.GetBits(n)
+            assert(parts.Length = 4)
+            let lo =  (bigint parts.[0]) <<<  0
+            let mid = (bigint parts.[1]) <<< 32
+            let hi =  (bigint parts.[2]) <<< 64
+            let sign = if (parts.[3] &&& 0x80000000) = 0 then 1I else -1I
+            let scale = (parts.[3] >>> 16) &&& 0x7F
+            BigRational.FromBigIntFraction(
+                sign * (lo + mid + hi),
+                BigInteger.Pow(10I, scale))
+
 module Expr =
+
+    let decimal = BigRational.FromDecimal >> Const
 
     let eval n expr =
 

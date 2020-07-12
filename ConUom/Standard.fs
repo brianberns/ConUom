@@ -18,7 +18,7 @@ module Standard =
 
         open SI
 
-        let inch = DerivedUnit (centimeter, Product (Var, Const (254N/100N)), "in")
+        let inch = DerivedUnit (centimeter, Product (Var, Expr.decimal 2.54m), "in")
 
         let feet = DerivedUnit (inch, Product (Var, Const 12N), "ft")
         let ft = feet
