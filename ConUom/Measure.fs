@@ -18,14 +18,18 @@ module Measure =
             Unit = unit
         }
 
-    let rec simplify measure =
-        match measure.Unit with
-            | DerivedUnit (unit, convert, _) ->
-                simplify {
-                    Value = convert |> Expr.eval measure.Value
-                    Unit = unit
-                }
-            | _ -> measure
+    let simplify measure =
+
+        let rec loop outer = function
+            | DerivedUnit (unit, inner, _) ->
+                loop (Expr.subst outer inner) unit
+            | unit -> outer, unit
+
+        let expr, unit = loop Var measure.Unit
+
+        create
+            (expr |> Expr.eval measure.Value)
+            unit
 
     let product measA measB =
         create

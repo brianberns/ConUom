@@ -65,3 +65,23 @@ module Expr =
                         | _ -> failwith "Unexpected"
 
         loop expr Var
+
+    let subst outer inner =
+
+        let same = function
+            | Sum _ -> Sum
+            | Difference _ -> Difference
+            | Product _ -> Product
+            | Quotient _ -> Quotient
+            | _ -> failwith "Unexpected"
+
+        let rec loop = function
+            | Const _ as expr -> expr
+            | Var -> inner
+            | Sum (exprA, exprB)
+            | Difference (exprA, exprB)
+            | Product (exprA, exprB)
+            | Quotient (exprA, exprB) as expr ->
+                (same expr) (loop exprA, loop exprB)
+
+        loop outer
