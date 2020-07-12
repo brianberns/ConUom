@@ -21,3 +21,10 @@ type TestClass () =
         Assert.AreEqual(
             120 @ ft^2,
             (10 @ ft) * (12 @ ft))
+
+    [<TestMethod>]
+    member __.Invert() =
+        let cToF = Sum (Product (Var, Const 1.8m), Const 32m)
+        let fToC = Quotient ((Difference (Var, Const 32m)), Const 1.8m)
+        Assert.AreEqual(fToC, Expr.invert cToF)
+        Assert.AreEqual(cToF, Expr.invert fToC)
