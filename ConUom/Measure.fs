@@ -1,26 +1,28 @@
 ﻿namespace ConUom
 
+open MathNet.Numerics
+
 [<StructuredFormatDisplay("{String}")>]
 type Measure =
     {
-        Value : decimal
+        Value : BigRational
         Unit : Unit
     }
 
     member this.String =
-        sprintf "%M %A" this.Value this.Unit
+        sprintf "%A %A" this.Value this.Unit
 
 module Measure =
 
     let inline create value unit =
         {
-            Value = decimal value
+            Value = value
             Unit = unit
         }
 
-    let rec private exp (x : decimal) (y : int) =
+    let rec private exp x y =
         match y with
-            | 0 -> 1m
+            | 0 -> 1N
             | 1 -> x
             | _ ->
                 if y > 1 then

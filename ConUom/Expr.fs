@@ -1,8 +1,10 @@
 ﻿namespace ConUom
 
+open MathNet.Numerics
+
 [<StructuredFormatDisplay("{String}")>]
 type Expr =
-    | Const of decimal
+    | Const of BigRational
     | Var
     | Sum of Expr * Expr
     | Difference of Expr * Expr
@@ -19,7 +21,7 @@ type Expr =
             | _ -> failwith "Unexpected"
 
         match this with
-            | Const n -> sprintf "%M" n
+            | Const n -> sprintf "%A" n
             | Var -> "x"
             | Sum (exprA, exprB)
             | Difference (exprA, exprB)
