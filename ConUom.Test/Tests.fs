@@ -23,20 +23,32 @@ type TestClass () =
     member __.ConvertLength() =
         Assert.AreEqual(
             BigRational.FromDecimal(5.08m) @ cm,
-            2N @ inch |> Measure.convert centimeter)
+            2N @ inch |> Measurement.convert centimeter)
         Assert.AreEqual(
             2N @ inch,
-            BigRational.FromDecimal(5.08m) @ cm |> Measure.convert inch)
+            BigRational.FromDecimal(5.08m) @ cm |> Measurement.convert inch)
 
     [<TestMethod>]
     member __.ConvertArea() =
         let ratio = BigRational.FromDecimal(2.54m)
         Assert.AreEqual(
             (6N * ratio * ratio) @ cm^2,
-            (2N @ inch) * (3N @ inch) |> Measure.convert (cm^2))
+            (2N @ inch) * (3N @ inch) |> Measurement.convert (cm^2))
+        Assert.AreEqual(
+            (2N @ inch) * (3N @ inch),
+            (6N * ratio * ratio) @ cm^2 |> Measurement.convert (inch^2))
 
     [<TestMethod>]
     member __.ConvertVolume() =
         Assert.AreEqual(
             552960N/77N @ gal,
-            (10N @ ft) * (12N @ ft) * (8N @ ft) |> Measure.convert gal)
+            (10N @ ft) * (12N @ ft) * (8N @ ft) |> Measurement.convert gal)
+        Assert.AreEqual(
+            (10N @ ft) * (12N @ ft) * (8N @ ft),
+            552960N/77N @ gal |> Measurement.convert (ft^3))
+
+    [<TestMethod>]
+    member __.Density() =
+        Assert.AreEqual(
+            0N @ lb,
+            (10N @ ft) * (12N @ ft) * (8N @ ft) * (1N @ water) |> Measurement.convert lb)

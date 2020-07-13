@@ -8,7 +8,7 @@
     <Compile Include="Expr.fs" />
     <Compile Include="Unit.fs" />
     <Compile Include="Standard.fs" />
-    <Compile Include="Measure.fs" />
+    <Compile Include="Measurement.fs" />
   </ItemGroup>
 
   <ItemGroup>
