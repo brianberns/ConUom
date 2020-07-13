@@ -1,1 +1,7 @@
-module Program = let [<EntryPoint>] main _ = 0
+namespace ConUom.Test
+
+module Program =
+
+    [<EntryPoint>] 
+    let main _ =
+        0

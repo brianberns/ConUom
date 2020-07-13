@@ -10,8 +10,15 @@ open Standard.SI
 open Standard.Imperial
 
 [<TestClass>]
-type TestClass () =
+type CoreUnit () =
 
+    [<TestMethod>]
+    member __.Normalize() =
+        Assert.AreEqual(
+            CoreUnit.create meter (dec 0.3048m) foot.Name,
+            foot)
+
+    (*
     [<TestMethod>]
     member __.Invert() =
         let cToF = Sum (Product (Var, Expr.decimal 1.8m), Const 32N)
@@ -57,3 +64,4 @@ type TestClass () =
             0N @ lb,
             (10N @ ft) * (12N @ ft) * (8N @ ft) * (1N @ water) |> Measurement.convert lb)
         *)
+    *)

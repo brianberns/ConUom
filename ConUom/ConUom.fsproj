@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Expr.fs" />
     <Compile Include="Unit.fs" />
     <Compile Include="Standard.fs" />
     <Compile Include="Measurement.fs" />

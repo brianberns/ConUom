@@ -1,5 +1,6 @@
 ﻿namespace ConUom
 
+open System
 open MathNet.Numerics
 
 type BaseDimension =
@@ -7,23 +8,107 @@ type BaseDimension =
     | Length
     | Mass
 
-[<StructuredFormatDisplay("{String}")>]
-type Unit =
-    | BaseUnit of BaseDimension * string    // e.g. m
-    | PowerUnit of (Unit * int)             // e.g. ft^3
-    | ProductUnit of (Unit * Unit)          // e.g. gram cm^-3 = gram/cm^3
-    | DerivedUnit of Unit * Expr * string   // expr converts from outer unit to inner unit
+type CoreUnit =
+    {
+        BaseDimension : BaseDimension
 
-    member this.String =
-        match this with
-            | BaseUnit (_, name) -> name
-            | PowerUnit (unit, n) -> sprintf "%A^%d" unit n
-            | ProductUnit (unitA, unitB) -> sprintf "%A %A" unitA unitB
-            | DerivedUnit (_, _, name) -> name
+        /// Factor to convert from scaled unit to base unit. E.g. 1000x for km -> m.
+        Scale : BigRational
+
+        Name : string
+    }
+
+module CoreUnit =
+
+    let createBase dim name =
+        {
+            BaseDimension = dim
+            Scale = 1N
+            Name = name
+        }
+
+    let create core scale name =
+        {
+            BaseDimension = core.BaseDimension
+            Scale = scale * core.Scale
+            Name = name
+        }
+
+[<StructuredFormatDisplay("{Name}")>]
+type Unit =
+    {
+        CoreMap : Map<CoreUnit, int>
+    }
+
+    /// Name of this unit.
+    member this.Name =
+        if this.CoreMap.IsEmpty
+            then "1"
+        else
+            let names =
+                this.CoreMap
+                    |> Map.toSeq
+                    |> Seq.map (fun (core, power) ->
+                        let name = core.Name
+                        if power = 1 then name
+                        else sprintf "(%s)^%d" name power)
+            String.Join(" ", names)
 
 module Unit =
 
-    let one = BaseUnit (Dimensionless, "1")
+    let one = { CoreMap = Map.empty }
+
+    let private add core power unit =
+        let oldPower =
+            unit.CoreMap
+                |> Map.tryFind core
+                |> Option.defaultValue 0
+        {
+            CoreMap =
+                unit.CoreMap
+                    |> Map.add core (oldPower + power)
+        }
+
+    let rec normalize unit : Unit =
+
+            // a^0 -> 1
+        if unit.Power = 0 then
+            one
+        else
+            match unit.Core with
+
+                | BaseUnit _ -> unit
+
+                | ProductUnit (unitA, unitB) ->
+
+                        // (a^n)(a^m) -> a^(n+m)
+                    if unit.Power = 1 then
+                        let unitA' = normalize unitA
+                        let unitB' = normalize unitB
+                        if unitA'.Core = unitB'.Core then
+                            create unitA'.Core (unitA'.Power + unitB'.Power)
+                                |> normalize
+                        else
+                            ProductUnit (unitA', unitB') |> ofCore
+
+                        // (ab)^n -> (a^n)(b^n)
+                    else
+                        let unitA' = unitA ^ unit.Power
+                        let unitB' = unitB ^ unit.Power
+                        ProductUnit (unitA', unitB') |> ofCore
+
+                | DerivedUnit (unit, expr, name) ->
+                    create
+                        (DerivedUnit (normalize unit, expr, name))
+                        unit.Power
+
+    and (^) unit power =
+
+            // (a^n)^m -> a^(n*m)
+        create
+            unit.Core
+            (unit.Power * power)
+            |> normalize
 
     /// An integer power of a rational base.
     let rec private exp x y =
@@ -63,32 +148,11 @@ module Unit =
 
         loop Var unit
 
-    let power unit = function
-        | 0 -> failwith "Invalid argument"
-        | 1 -> unit
-        | n -> PowerUnit (unit, n)
-
     let product unitA unitB =
-        if unitA = unitB then
-            PowerUnit (unitA, 2)
-        else
-            match unitA, unitB with
-                | PowerUnit (unitA', a), PowerUnit (unitB', b)
-                    when unitA' = unitB' ->
-                    if a = b then one
-                    else PowerUnit (unitA', a - b)
-                | _, PowerUnit (unit, power) ->
-                    if unitA = unit then
-                        PowerUnit (unit, power + 1)
-                    else
-                        ProductUnit (unitA, unitB)
-                | PowerUnit (unit, power), _ ->
-                    if unitB = unit then
-                        PowerUnit (unit, power + 1)
-                    else
-                        ProductUnit (unitA, unitB)
-                | _ -> ProductUnit (unitA, unitB)
+        ProductUnit (unitA, unitB)
+            |> ofCore
+            |> normalize
 
 [<AutoOpen>]
 module UnitAutoOpen =
-    let (^) = Unit.power
+    let (^) = Unit.(^)

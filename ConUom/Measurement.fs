@@ -2,6 +2,7 @@
 
 open MathNet.Numerics
 
+(*
 /// An individual measurement. E.g. 3 lbs.
 [<StructuredFormatDisplay("{String}")>]
 type Measurement =
@@ -91,3 +92,4 @@ module ProductExt2 =
     /// Extended product operator.
     let inline (*) a b =
         (a => ProductExt) b
+*)

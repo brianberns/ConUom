@@ -2,8 +2,51 @@
 
 open MathNet.Numerics
 
+[<AutoOpen>]
+module BigRationalExt =
+
+    open System
+    open System.Numerics
+
+    type BigRational with
+
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.decimal.getbits
+        static member FromDecimal(n : decimal) =
+            let parts = Decimal.GetBits(n)
+            assert(parts.Length = 4)
+            let lo =  (bigint parts.[0]) <<<  0
+            let mid = (bigint parts.[1]) <<< 32
+            let hi =  (bigint parts.[2]) <<< 64
+            let sign = if (parts.[3] &&& 0x80000000) = 0 then 1I else -1I
+            let scale = (parts.[3] >>> 16) &&& 0x7F
+            BigRational.FromBigIntFraction(
+                sign * (lo + mid + hi),
+                BigInteger.Pow(10I, scale))
+
+    let dec = BigRational.FromDecimal
+
 module Standard =
 
+    let centi = dec 0.01m
+
+    module SI =
+
+        let meter = CoreUnit.createBase Length "m"
+        let m = meter
+
+        let centimeter = CoreUnit.create meter centi "cm"
+        let cm = centimeter
+
+    module Imperial =
+
+        open SI
+
+        let inch = CoreUnit.create centimeter (dec 2.54m) "in"
+
+        let foot = CoreUnit.create inch 12N "ft"
+        let ft = foot
+
+(*
     let kilo = Product (Var, Const 1000N)
     let hecto = Product (Var, Const 100N)
     let deka = Product (Var, Const 10N)
@@ -41,3 +84,4 @@ module Standard =
 
         let pound = DerivedUnit (kg, Product (Var, Expr.decimal 0.45359237m), "lb")
         let lb = pound
+*)
