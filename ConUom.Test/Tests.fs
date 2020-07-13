@@ -50,5 +50,10 @@ type TestClass () =
     [<TestMethod>]
     member __.Density() =
         Assert.AreEqual(
+            1N @ gram,
+            (1N @ cm^3) * (1N @ water))
+        (*
+        Assert.AreEqual(
             0N @ lb,
             (10N @ ft) * (12N @ ft) * (8N @ ft) * (1N @ water) |> Measurement.convert lb)
+        *)

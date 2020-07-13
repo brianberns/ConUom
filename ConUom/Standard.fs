@@ -25,7 +25,7 @@ module Standard =
         let gram = DerivedUnit (kg, milli, "g")
         let g = gram
 
-        let water = QuotientUnit (gram, cm^3)
+        let water = Unit.product gram cm^(-3)
 
     module Imperial =
 

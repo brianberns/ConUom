@@ -23,48 +23,10 @@ module Measurement =
             Unit = unit
         }
 
-    /// An integer power of a rational base.
-    let rec private exp x y =
-        match y with
-            | 0 -> 1N
-            | 1 -> x
-            | _ ->
-                if y > 1 then
-                    x * (exp x (y - 1))
-                else
-                    failwith "Unexpected"
-
-    /// Builds an expression that simplifies the given unit.
-    let private build unit =
-
-        let rec loop outer = function
-
-            | DerivedUnit (unit, inner, _) ->
-                loop (Expr.subst outer inner) unit
-
-                // E.g. ft^2 = 2.54^2 cm^2
-            | PowerUnit (DerivedUnit (unit, inner, _), power) ->
-                let expr =
-                    match inner with
-                        | Product (Const x, Var)
-                        | Product (Var, Const x) ->
-                            Product (Const (exp x power), Var)
-                        | Quotient (Var, Const x) ->
-                            Quotient (Var, Const (exp x power))
-                        | _ -> failwith "Unexpected"
-                        |> Expr.subst outer
-                let unit' =
-                    PowerUnit (unit, power)
-                loop expr unit'
-
-            | unit -> outer, unit
-
-        loop Var unit
-
     /// Simplifies the given measure. E.g. 2 in -> 5.08 cm
     let private simplify meas =
 
-        let expr, unit = build meas.Unit
+        let expr, unit = Unit.simplify meas.Unit
 
         create
             (expr |> Expr.eval meas.Value)
@@ -77,7 +39,7 @@ module Measurement =
         let meas' = simplify meas
 
             // build conversion expression
-        let expr, unit' = build unit
+        let expr, unit' = Unit.simplify unit
         if unit' <> meas'.Unit then
             failwithf "'%A' and '%A' are incompatible units" unit' meas.Unit
         let expr' = Expr.invert expr
