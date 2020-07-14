@@ -7,7 +7,8 @@
   <ItemGroup>
     <Compile Include="BaseUnit.fs" />
     <Compile Include="Unit.fs" />
-    <Compile Include="Standard.fs" />
+    <Compile Include="BigRational.fs" />
+    <Compile Include="Units.fs" />
     <Compile Include="Measurement.fs" />
   </ItemGroup>
 

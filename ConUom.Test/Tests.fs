@@ -7,10 +7,14 @@ open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
 
 open ConUom
-
-open Standard
-open Standard.SI
-open Standard.Imperial
+open ConUom.Units
+open ConUom.Units.Liquor
+open ConUom.Units.SI.Density
+open ConUom.Units.SI.Length
+open ConUom.Units.SI.Mass
+open ConUom.Units.USCS.Length
+open ConUom.Units.USCS.Mass
+open ConUom.Units.USCS.Volume
 
 [<TestClass>]
 type TestClass () =
