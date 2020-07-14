@@ -41,7 +41,7 @@ type TestClass () =
         let unit = ft
         Assert.AreEqual(
             Set [BaseUnit.create Length "m", 1],
-            unit.BaseMap |> Map.toSeq |> Set)
+            unit.BaseUnits)
         Assert.AreEqual(dec 0.3048m, unit.Scale)
         Assert.AreEqual("ft", unit.Name)
 
@@ -50,7 +50,7 @@ type TestClass () =
         let unit = ft ^ 2
         Assert.AreEqual(
             Set [BaseUnit.create Length "m", 2],
-            unit.BaseMap |> Map.toSeq |> Set)
+            unit.BaseUnits)
         Assert.AreEqual(dec 0.3048m ** 2, unit.Scale)
         Assert.AreEqual("ft^2", unit.Name)
 
@@ -63,14 +63,14 @@ type TestClass () =
                 BaseUnit.create Length "m", 1
                 BaseUnit.create Time "s", -1
             ],
-            unit.BaseMap |> Map.toSeq |> Set)
+            unit.BaseUnits)
         Assert.AreEqual(dec 0.44704m, unit.Scale)
         Assert.AreEqual("mile/hr", unit.Name)
 
-        let unit = Unit.mult unit min
+        let unit = unit * min
         Assert.AreEqual(
             Set [ BaseUnit.create Length "m", 1 ],
-            unit.BaseMap |> Map.toSeq |> Set)
+            unit.BaseUnits)
         Assert.AreEqual(dec 1609.344m / 60N, unit.Scale)
 
     [<TestMethod>]
@@ -81,11 +81,10 @@ type TestClass () =
                 BaseUnit.create Length "m", 1
                 BaseUnit.create Time "s", -2
             ],
-            unit.BaseMap |> Map.toSeq |> Set)
+            unit.BaseUnits)
         Assert.AreEqual(1N, unit.Scale)
         Assert.AreEqual("m/s^2", unit.Name)
 
-    (*
     [<TestMethod>]
     member __.ConvertLength() =
         Assert.AreEqual(
@@ -124,4 +123,3 @@ type TestClass () =
             0N @ lb,
             (10N @ ft) * (12N @ ft) * (8N @ ft) * (1N @ water) |> Measurement.convert lb)
         *)
-    *)

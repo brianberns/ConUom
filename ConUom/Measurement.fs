@@ -2,7 +2,6 @@
 
 open MathNet.Numerics
 
-(*
 /// An individual measurement. E.g. 3 lbs.
 [<StructuredFormatDisplay("{String}")>]
 type Measurement =
@@ -18,43 +17,27 @@ type Measurement =
 module Measurement =
 
     /// Creates a measurement.
-    let inline create value unit =
+    let create value unit =
         {
             Value = value
             Unit = unit
         }
 
-    /// Simplifies the given measure. E.g. 2 in -> 5.08 cm
-    let private simplify meas =
-
-        let expr, unit = Unit.simplify meas.Unit
-
-        create
-            (expr |> Expr.eval meas.Value)
-            unit
-
     /// Converts the given measurement to the given unit.
     let convert unit meas =
 
-            // reduce measurement to base units
-        let meas' = simplify meas
-
-            // build conversion expression
-        let expr, unit' = Unit.simplify unit
-        if unit' <> meas'.Unit then
-            failwithf "'%A' and '%A' are incompatible units" unit' meas.Unit
-        let expr' = Expr.invert expr
-
-            // convert value to new unit
-        create
-            (expr' |> Expr.eval meas'.Value)
-            unit
+        let baseUnits = (unit : Unit).BaseUnits
+        if baseUnits <> meas.Unit.BaseUnits then
+            failwithf "Can't convert '%s' to '%s'" meas.Unit.Name unit.Name
+        let value =
+            meas.Value * meas.Unit.Scale / unit.Scale
+        create value unit
 
     /// Multiplies two measurements. E.g. 10 ft * 12 ft = 120 ft^2.
     let product measA measB =
         create
             (measA.Value * measB.Value)
-            (Unit.product measA.Unit measB.Unit)
+            (Unit.mult measA.Unit measB.Unit)
 
 [<AutoOpen>]
 module MeasureAutoOpen =
@@ -75,7 +58,7 @@ type ProductExt =
 
     /// Unit product.
     static member (=>) (unitA, _ : ProductExt) =
-        fun unitB -> Unit.product unitA unitB
+        fun unitB -> Unit.mult unitA unitB
 
     /// Measurement product.
     static member (=>) (measA, _ : ProductExt) =
@@ -92,4 +75,3 @@ module ProductExt2 =
     /// Extended product operator.
     let inline (*) a b =
         (a => ProductExt) b
-*)

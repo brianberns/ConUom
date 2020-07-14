@@ -34,6 +34,11 @@ type Unit =
         Name : string
     }
 
+    member this.BaseUnits =
+        this.BaseMap
+            |> Map.toSeq
+            |> Set
+
 module Unit =
 
     let one =
