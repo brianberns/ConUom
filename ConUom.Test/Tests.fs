@@ -10,13 +10,37 @@ open Standard.SI
 open Standard.Imperial
 
 [<TestClass>]
-type CoreUnit () =
+type TestClass () =
 
     [<TestMethod>]
-    member __.Normalize() =
+    member __.Foot() =
+        let unit = ft
         Assert.AreEqual(
-            CoreUnit.create meter (dec 0.3048m) foot.Name,
-            foot)
+            Set [BaseUnit.create Length "m", 1],
+            unit.BaseMap |> Map.toSeq |> Set)
+        Assert.AreEqual(dec 0.3048m, unit.Scale)
+        Assert.AreEqual("ft", unit.Name)
+
+    [<TestMethod>]
+    member __.SquareFoot() =
+        let unit = ft ^ 2
+        Assert.AreEqual(
+            Set [BaseUnit.create Length "m", 2],
+            unit.BaseMap |> Map.toSeq |> Set)
+        Assert.AreEqual(dec 0.3048m ** 2, unit.Scale)
+        Assert.AreEqual("ft^2", unit.Name)
+
+    [<TestMethod>]
+    member __.MetersPerSecond() =
+        let unit = Unit.div m s
+        Assert.AreEqual(
+            Set [
+                BaseUnit.create Length "m", 1
+                BaseUnit.create Time "s", -1
+            ],
+            unit.BaseMap |> Map.toSeq |> Set)
+        Assert.AreEqual(1N, unit.Scale)
+        Assert.AreEqual("m/s", unit.Name)
 
     (*
     [<TestMethod>]

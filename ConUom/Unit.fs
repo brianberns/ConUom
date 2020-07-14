@@ -7,151 +7,115 @@ type BaseDimension =
     | Dimensionless
     | Length
     | Mass
+    | Time
 
-type CoreUnit =
+type BaseUnit =
     {
         BaseDimension : BaseDimension
-
-        /// Factor to convert from scaled unit to base unit. E.g. 1000x for km -> m.
-        Scale : BigRational
-
         Name : string
     }
 
-module CoreUnit =
+module BaseUnit =
 
-    let createBase dim name =
+    let create dim name =
         {
             BaseDimension = dim
-            Scale = 1N
-            Name = name
-        }
-
-    let create core scale name =
-        {
-            BaseDimension = core.BaseDimension
-            Scale = scale * core.Scale
             Name = name
         }
 
 [<StructuredFormatDisplay("{Name}")>]
 type Unit =
     {
-        CoreMap : Map<CoreUnit, int>
-    }
+        BaseMap : Map<BaseUnit, int (*power*)>
 
-    /// Name of this unit.
-    member this.Name =
-        if this.CoreMap.IsEmpty
-            then "1"
-        else
-            let names =
-                this.CoreMap
-                    |> Map.toSeq
-                    |> Seq.map (fun (core, power) ->
-                        let name = core.Name
-                        if power = 1 then name
-                        else sprintf "(%s)^%d" name power)
-            String.Join(" ", names)
+        /// Factor to convert from outer unit to base units. E.g. 1000x for km -> m.
+        Scale : BigRational
+
+        Name : string
+    }
 
 module Unit =
 
-    let one = { CoreMap = Map.empty }
-
-    let private add core power unit =
-        let oldPower =
-            unit.CoreMap
-                |> Map.tryFind core
-                |> Option.defaultValue 0
+    let one =
         {
-            CoreMap =
-                unit.CoreMap
-                    |> Map.add core (oldPower + power)
+            BaseMap = Map.empty
+            Scale = 1N
+            Name = "1"
         }
 
-    let rec normalize unit : Unit =
+    let createBase dim name =
+        {
+            BaseMap =  Map [ BaseUnit.create dim name, 1 ]
+            Scale = 1N
+            Name = name
+        }
 
-            // a^0 -> 1
-        if unit.Power = 0 then
-            one
-        else
-            match unit.Core with
+    let create unit scale name =
+        {
+            BaseMap = unit.BaseMap
+            Scale = scale * unit.Scale
+            Name = name
+        }
 
-                | BaseUnit _ -> unit
-
-                | ProductUnit (unitA, unitB) ->
-
-                        // (a^n)(a^m) -> a^(n+m)
-                    if unit.Power = 1 then
-                        let unitA' = normalize unitA
-                        let unitB' = normalize unitB
-                        if unitA'.Core = unitB'.Core then
-                            create unitA'.Core (unitA'.Power + unitB'.Power)
-                                |> normalize
-                        else
-                            ProductUnit (unitA', unitB') |> ofCore
-
-                        // (ab)^n -> (a^n)(b^n)
+    let mult unitA unitB =
+        let baseMap =
+            (unitA.BaseMap, unitB.BaseMap |> Map.toSeq)
+                ||> Seq.fold (fun baseMap (baseUnit, power) ->
+                    let oldPower =
+                        baseMap
+                            |> Map.tryFind baseUnit
+                            |> Option.defaultValue 0
+                    let newPower = oldPower + power   // (a^n)(a^m) -> a^(n+m)
+                    if newPower = 0 then
+                        baseMap
+                            |> Map.remove baseUnit
                     else
-                        let unitA' = unitA ^ unit.Power
-                        let unitB' = unitB ^ unit.Power
-                        ProductUnit (unitA', unitB') |> ofCore
+                        baseMap
+                            |> Map.add baseUnit (oldPower + power))
+        assert(
+            baseMap
+                |> Map.toSeq
+                |> Seq.map snd
+                |> Seq.forall ((<>) 0))
+        {
+            BaseMap = baseMap
+            Scale = unitA.Scale * unitB.Scale
+            Name = sprintf "%s %s" unitA.Name unitB.Name
+        }
 
-                | DerivedUnit (unit, expr, name) ->
-                    create
-                        (DerivedUnit (normalize unit, expr, name))
-                        unit.Power
+    let invert unit =
+        {
+            BaseMap =
+                unit.BaseMap
+                    |> Map.toSeq
+                    |> Seq.map (fun (baseUnit, power) ->
+                        baseUnit, -power)
+                    |> Map
+            Scale = 1N / unit.Scale
+            Name = sprintf "1/%s" unit.Name
+        }
 
-    and (^) unit power =
+    let div unitA unitB =
+        {
+            mult unitA (invert unitB) with
+                Name = sprintf "%s/%s" unitA.Name unitB.Name
+        }
 
-            // (a^n)^m -> a^(n*m)
-        create
-            unit.Core
-            (unit.Power * power)
-            |> normalize
-
-    /// An integer power of a rational base.
-    let rec private exp x y =
-        match y with
-            | 0 -> 1N
-            | 1 -> x
-            | _ ->
-                if y > 1 then
-                    x * (exp x (y - 1))
-                else
-                    failwith "Unexpected"
-
-    /// Creates an expression that simplifies the given unit.
-    let simplify unit =
-
-        let rec loop outer = function
-
-            | DerivedUnit (unit, inner, _) ->
-                loop (Expr.subst outer inner) unit
-
-                // E.g. ft^2 = 2.54^2 cm^2
-            | PowerUnit (DerivedUnit (unit, inner, _), power) ->
-                let expr =
-                    match inner with
-                        | Product (Const x, Var)
-                        | Product (Var, Const x) ->
-                            Product (Const (exp x power), Var)
-                        | Quotient (Var, Const x) ->
-                            Quotient (Var, Const (exp x power))
-                        | _ -> failwith "Unexpected"
-                        |> Expr.subst outer
-                let unit' =
-                    PowerUnit (unit, power)
-                loop expr unit'
-
-            | unit -> outer, unit
-
-        loop Var unit
-
-    let product unitA unitB =
-        ProductUnit (unitA, unitB)
-            |> ofCore
-            |> normalize
+    let (^) unit power =
+        if power = 0 then one   // a^0 -> 1
+        else
+            let baseMap =
+                unit.BaseMap
+                    |> Map.toSeq
+                    |> Seq.map (fun (baseUnit, oldPower) ->
+                        assert(oldPower <> 0)
+                        baseUnit, oldPower * power)   // (a^n)^m -> a^(n*m)
+                    |> Map
+            {
+                BaseMap = baseMap
+                Scale = unit.Scale ** power
+                Name = sprintf "%s^%d" unit.Name power
+            }
 
 [<AutoOpen>]
 module UnitAutoOpen =

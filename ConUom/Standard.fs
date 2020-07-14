@@ -31,19 +31,22 @@ module Standard =
 
     module SI =
 
-        let meter = CoreUnit.createBase Length "m"
+        let meter = Unit.createBase Length "m"
         let m = meter
 
-        let centimeter = CoreUnit.create meter centi "cm"
+        let centimeter = Unit.create meter centi "cm"
         let cm = centimeter
+
+        let second = Unit.createBase Time "s"
+        let s = second
 
     module Imperial =
 
         open SI
 
-        let inch = CoreUnit.create centimeter (dec 2.54m) "in"
+        let inch = Unit.create centimeter (dec 2.54m) "in"
 
-        let foot = CoreUnit.create inch 12N "ft"
+        let foot = Unit.create inch 12N "ft"
         let ft = foot
 
 (*
