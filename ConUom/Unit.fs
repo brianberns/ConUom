@@ -49,7 +49,7 @@ type Unit =
                         |> Seq.map (fun (baseUnit, power) ->
                             let name = baseUnit.Name
                             if power = 1 then name
-                            else sprintf "(%s)^%d" name power)
+                            else sprintf "%s^%d" name power)
                 String.Join(" ", names)
             sprintf "%A %s" this.Scale units
 

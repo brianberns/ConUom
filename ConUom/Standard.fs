@@ -59,7 +59,7 @@ module Standard =
         let gram = Unit.create kg milli
         let g = gram
 
-        let water = Unit.mult gram cm^(-3)
+        let water = Unit.mult gram (cm ^ -3)
 
     module Imperial =
 

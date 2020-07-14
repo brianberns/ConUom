@@ -12,7 +12,7 @@ type Measurement =
 
     /// Display string.
     member this.String =
-        sprintf "%A %A" this.Value this.Unit
+        sprintf "%A @ %A" this.Value this.Unit
 
 module Measurement =
 
