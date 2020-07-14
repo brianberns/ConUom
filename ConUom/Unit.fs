@@ -16,12 +16,6 @@ type Unit =
         Scale : BigRational
     }
 
-    /// This unit's set of base units.
-    member this.BaseUnits =
-        this.BaseMap
-            |> Map.toSeq
-            |> Set
-
     /// Name of this unit.
     member this.Name =
         if this.BaseMap.IsEmpty then
@@ -61,6 +55,16 @@ module Unit =
             Scale = scale
         }
 
+    /// Answers the given unit's set of base units.
+    let baseUnits unit =
+        unit.BaseMap
+            |> Map.toSeq
+            |> Set
+
+    /// Answers the given unit's scale.
+    let scale unit =
+        unit.Scale
+
     /// Multiplies two units.
     let mult unitA unitB =
         let baseMap =
@@ -91,7 +95,8 @@ module Unit =
     let invert unit =
         {
             BaseMap =
-                (unit : Unit).BaseUnits
+                unit
+                    |> baseUnits
                     |> Seq.map (fun (baseUnit, power) ->
                         baseUnit, -power)
                     |> Map

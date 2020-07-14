@@ -26,10 +26,14 @@ module Measurement =
             Unit = unit
         }
 
+    /// Answers the given measurement's value as a floating point number.
+    let float meas =
+        float meas.Value
+
     /// Converts the given measurement to the given unit.
     let convert unit meas =
-        let baseUnits = (unit : Unit).BaseUnits
-        if baseUnits <> meas.Unit.BaseUnits then
+        let baseUnits = unit |> Unit.baseUnits
+        if baseUnits <> (meas.Unit |> Unit.baseUnits) then
             failwithf "Can't convert '%s' to '%s'" meas.Unit.Name unit.Name
         let value =
             meas.Value * meas.Unit.Scale / unit.Scale

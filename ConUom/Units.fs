@@ -90,6 +90,8 @@ module Mass =
     let pound = 0.45359237m @@ kg 
     let lb = pound
 
+    let ton = 2000 @@ lb
+
 module Volume =
 
     open Length

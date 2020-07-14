@@ -75,17 +75,24 @@ type TestClass () =
             1 @ gram,
             (1 @ cm^3) * (1 @ water))
         Assert.AreEqual(
-            2718417272832N/45359237N @ lb,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) * (1 @ water) => lb)
+            59930.84215309883,
+            (10 @ ft) * (12 @ ft) * (8 @ ft) * (1 @ water) => lb |> Measurement.float)
+        Assert.AreEqual(
+            0.5339487791320047,
+            (2 @ ton) / ((10 @ ft) * (12 @ ft) * (1 @ water)) => ft |> Measurement.float)
 
     [<TestMethod>]
     member __.Liquor() =
-        let magnum = 1.5m @@ liter
+
         let alcohol = 0.7893m @@ density
-        Assert.AreEqual(
-            Unit.createScale (10000N/7893N),
-            water/alcohol)
         let beer = (12 @@ floz) * (3.2m @@ percent) * (water/alcohol)
+        let magnum = 1.5m @@ liter
         Assert.AreEqual(
-            (2219906250N/157725491N) @ beer,
-            (1 @ magnum) * (13.5m @ percent) => beer)
+            14.074492562524341,
+            (1 @ magnum) * (13.5m @ percent) => beer |> Measurement.float)
+
+        let proof = Unit.createScale (1N/200N)
+        let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gallon)
+        Assert.AreEqual(
+            8.78372074090843481138500000,
+            junglejuice => percent |> Measurement.float)
