@@ -46,10 +46,3 @@ module Measurement =
         create
             (measA.Value / measB.Value)
             (Unit.div measA.Unit measB.Unit)
-
-[<AutoOpen>]
-module MeasureAutoOpen =
-
-    /// Creates a measurement.
-    let inline (@) value unit =
-        Measurement.create value unit

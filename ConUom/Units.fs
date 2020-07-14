@@ -105,16 +105,3 @@ module Volume =
 
     let fluidounce = (1N/16N) @@ pint
     let floz = fluidounce
-
-namespace ConUom.Units.Liquor
-
-open ConUom
-
-[<AutoOpen>]
-module General =
-
-    open ConUom.Units.SI.Density
-    open ConUom.Units.SI.Volume
-
-    let magnum = 1.5m @@ liter
-    let alcohol = 0.7893m @@ density

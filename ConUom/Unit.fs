@@ -125,15 +125,24 @@ module UnitAutoOpen =
     /// Raises a unit to a power.
     let (^) = Unit.(^)
 
+/// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306
+/// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
+
 /// Extended @@ operator.
 type AtAtExt =
     | AtAtExt
 
+    /// Create unit from rational.
     static member (=>) (scale, _ : AtAtExt) =
         fun unit -> Unit.create unit scale
 
+    /// Create unit from decimal.
     static member (=>) (scale, _ : AtAtExt) =
         fun unit -> Unit.create unit (dec scale)
+
+    /// Create unit from integer.
+    static member (=>) (scale, _ : AtAtExt) =
+        fun unit -> Unit.create unit (BigRational.FromInt scale)
 
     /// Dummy member to create ambiguity between the overloads.
     static member (=>) (_ : AtAtExt, _ : AtAtExt) =

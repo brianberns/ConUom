@@ -1,7 +1,6 @@
 ﻿namespace ConUom
 
-/// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306
-/// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
+open MathNet.Numerics
 
 /// Extended product operator.
 type ProductExt =
@@ -58,3 +57,31 @@ module QuotientExt =
     /// Extended quotient operator.
     let inline (/) a b =
         (a => QuotientExt) b
+
+/// Extended @ operator.
+type AtExt =
+    | AtExt
+
+    /// Create measurement from rational.
+    static member (=>) (value, _ : AtExt) =
+        fun unit -> Measurement.create value unit
+
+    /// Create measurement from decimal.
+    static member (=>) (value, _ : AtExt) =
+        fun unit -> Measurement.create (dec value) unit
+
+    /// Create measurement from integer.
+    static member (=>) (value, _ : AtExt) =
+        fun unit -> Measurement.create (BigRational.FromInt value) unit
+
+    /// Dummy member to create ambiguity between the overloads.
+    static member (=>) (_ : AtExt, _ : AtExt) =
+        failwith "Unexpected"
+        id<AtExt>
+
+[<AutoOpen>]
+module AtExt =
+
+    /// Extended @ operator.
+    let inline (@) a b =
+        (a => AtExt) b

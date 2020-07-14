@@ -8,10 +8,10 @@ open MathNet.Numerics
 
 open ConUom
 open ConUom.Units
-open ConUom.Units.Liquor
 open ConUom.Units.SI.Density
 open ConUom.Units.SI.Length
 open ConUom.Units.SI.Mass
+open ConUom.Units.SI.Volume
 open ConUom.Units.USCS.Length
 open ConUom.Units.USCS.Mass
 open ConUom.Units.USCS.Volume
@@ -45,9 +45,9 @@ type TestClass () =
     member __.Length() =
         Assert.AreEqual(
             BigRational.FromDecimal(5.08m) @ cm,
-            2N @ inch |> Measurement.convert centimeter)
+            2 @ inch |> Measurement.convert centimeter)
         Assert.AreEqual(
-            2N @ inch,
+            2 @ inch,
             BigRational.FromDecimal(5.08m) @ cm |> Measurement.convert inch)
 
     [<TestMethod>]
@@ -55,35 +55,37 @@ type TestClass () =
         let ratio = BigRational.FromDecimal(2.54m)
         Assert.AreEqual(
             (6N * ratio * ratio) @ cm^2,
-            (2N @ inch) * (3N @ inch) |> Measurement.convert (cm^2))
+            (2 @ inch) * (3 @ inch) |> Measurement.convert (cm^2))
         Assert.AreEqual(
-            (2N @ inch) * (3N @ inch),
+            (2 @ inch) * (3 @ inch),
             (6N * ratio * ratio) @ cm^2 |> Measurement.convert (inch^2))
 
     [<TestMethod>]
     member __.Volume() =
         Assert.AreEqual(
             552960N/77N @ gal,
-            (10N @ ft) * (12N @ ft) * (8N @ ft) |> Measurement.convert gal)
+            (10 @ ft) * (12 @ ft) * (8 @ ft) |> Measurement.convert gal)
         Assert.AreEqual(
-            (10N @ ft) * (12N @ ft) * (8N @ ft),
+            (10 @ ft) * (12 @ ft) * (8 @ ft),
             552960N/77N @ gal |> Measurement.convert (ft^3))
 
     [<TestMethod>]
     member __.Density() =
         Assert.AreEqual(
-            1N @ gram,
-            (1N @ cm^3) * (1N @ water))
+            1 @ gram,
+            (1 @ cm^3) * (1 @ water))
         Assert.AreEqual(
             2718417272832N/45359237N @ lb,
-            (10N @ ft) * (12N @ ft) * (8N @ ft) * (1N @ water) |> Measurement.convert lb)
+            (10 @ ft) * (12 @ ft) * (8 @ ft) * (1 @ water) |> Measurement.convert lb)
 
     [<TestMethod>]
     member __.Liquor() =
+        let magnum = 1.5m @@ liter
+        let alcohol = 0.7893m @@ density
         Assert.AreEqual(
             Unit.createScale (10000N/7893N),
             water/alcohol)
-        let beer = (12N @@ floz) * (3.2m @@ percent) * (water/alcohol)
+        let beer = (12 @@ floz) * (3.2m @@ percent) * (water/alcohol)
         Assert.AreEqual(
             (2219906250N/157725491N) @ beer,
-            (1N @ magnum) * (dec 13.5m @ percent) |> Measurement.convert beer)
+            (1 @ magnum) * (dec 13.5m @ percent) |> Measurement.convert beer)
