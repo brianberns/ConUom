@@ -138,7 +138,7 @@ type AtAtExt =
 
     /// Create unit from decimal.
     static member (=>) (scale, _ : AtAtExt) =
-        fun unit -> Unit.create unit (dec scale)
+        fun unit -> Unit.create unit (BigRational.FromDecimal scale)
 
     /// Create unit from integer.
     static member (=>) (scale, _ : AtAtExt) =

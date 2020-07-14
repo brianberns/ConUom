@@ -25,6 +25,3 @@ module BigRationalExt =
             BigRational.FromBigIntFraction(
                 sign * (lo + mid + hi),
                 BigInteger.Pow(10I, scale))
-
-    /// Creates a BigRational from a decimal.
-    let dec = BigRational.FromDecimal

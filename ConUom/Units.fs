@@ -6,14 +6,14 @@ open MathNet.Numerics
 [<AutoOpen>]
 module General =
 
-    let kilo  = 1000N
-    let hecto =  100N
-    let deka  =   10N
-    let deci  = dec 0.1m
-    let centi = dec 0.01m
-    let milli = dec 0.001m
+    let kilo  =    1000N
+    let hecto =     100N
+    let deka  =      10N
+    let deci  = 1N/  10N
+    let centi = 1N/ 100N
+    let milli = 1N/1000N
 
-    let percent = Unit.createScale (1N/100N)
+    let percent = Unit.createScale centi
 
 /// International System of Units.
 namespace ConUom.Units.SI

@@ -39,7 +39,7 @@ type TestClass () =
                 -7.9228162514264337593543950335M, -79228162514264337593543950335N/10000000000000000000000000000N
             ]
         for (decimal, rational) in pairs do
-            Assert.AreEqual(rational, dec decimal)
+            Assert.AreEqual(rational, BigRational.FromDecimal decimal)
 
     [<TestMethod>]
     member __.Length() =
@@ -88,4 +88,4 @@ type TestClass () =
         let beer = (12 @@ floz) * (3.2m @@ percent) * (water/alcohol)
         Assert.AreEqual(
             (2219906250N/157725491N) @ beer,
-            (1 @ magnum) * (dec 13.5m @ percent) |> Measurement.convert beer)
+            (1 @ magnum) * (13.5m @ percent) |> Measurement.convert beer)

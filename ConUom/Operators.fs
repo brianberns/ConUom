@@ -68,7 +68,7 @@ type AtExt =
 
     /// Create measurement from decimal.
     static member (=>) (value, _ : AtExt) =
-        fun unit -> Measurement.create (dec value) unit
+        fun unit -> Measurement.create (BigRational.FromDecimal value) unit
 
     /// Create measurement from integer.
     static member (=>) (value, _ : AtExt) =
