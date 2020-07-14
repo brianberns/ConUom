@@ -55,7 +55,7 @@ module Volume =
 
     open Length
 
-    let cc = 1N @@ (cm^3)
+    let cc = 1N @@ cm^3
     let liter = 1000N @@ cc
 
 module Density =
@@ -94,7 +94,7 @@ module Volume =
 
     open Length
 
-    let gallon = 231N @@ (inch^3)
+    let gallon = 231N @@ inch^3
     let gal = gallon
 
     let quart = 0.25m @@ gal

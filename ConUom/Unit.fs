@@ -120,7 +120,7 @@ module Unit =
             }
 
 [<AutoOpen>]
-module UnitAutoOpen =
+module UnitExt =
 
     /// Raises a unit to a power.
     let (^) = Unit.(^)

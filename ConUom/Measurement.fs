@@ -46,3 +46,10 @@ module Measurement =
         create
             (measA.Value / measB.Value)
             (Unit.div measA.Unit measB.Unit)
+
+[<AutoOpen>]
+module MeasurementExt =
+
+    /// Converts the given measurement to the given unit.
+    let (@!) meas unit =
+        Measurement.convert unit meas
