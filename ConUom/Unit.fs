@@ -4,7 +4,6 @@ open System
 open MathNet.Numerics
 
 type BaseDimension =
-    | Dimensionless
     | Length
     | Mass
     | Time
@@ -39,8 +38,8 @@ type Unit =
 
     /// Name of this unit.
     member this.Name =
-        if this.BaseMap.IsEmpty
-            then "1"
+        if this.BaseMap.IsEmpty then
+            sprintf "%A" this.Scale
         else
             let units =
                 let names =
@@ -55,12 +54,6 @@ type Unit =
 
 module Unit =
 
-    let one =
-        {
-            BaseMap = Map.empty
-            Scale = 1N
-        }
-
     let createBase dim name =
         {
             BaseMap =  Map [ BaseUnit.create dim name, 1 ]
@@ -71,6 +64,13 @@ module Unit =
         {
             BaseMap = unit.BaseMap
             Scale = scale * unit.Scale
+        }
+
+    /// Creates a dimensionless unit.
+    let createEmpty scale =
+        {
+            BaseMap = Map.empty
+            Scale = scale
         }
 
     let mult unitA unitB =
@@ -113,7 +113,8 @@ module Unit =
         mult unitA (invert unitB)
 
     let (^) unit power =
-        if power = 0 then one   // a^0 -> 1
+        if power = 0 then   // a^0 -> 1
+            createEmpty 1N
         else
             let baseMap =
                 unit.BaseMap
@@ -129,4 +130,7 @@ module Unit =
 
 [<AutoOpen>]
 module UnitAutoOpen =
+
+    let (@@) scale unit = Unit.create unit scale
+
     let (^) = Unit.(^)

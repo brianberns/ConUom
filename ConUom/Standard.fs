@@ -35,45 +35,64 @@ module Standard =
     let centi = dec 0.01m
     let milli = dec 0.001m
 
+    let percent = Unit.createEmpty (1N/100N)
+
     module SI =
 
         let meter = Unit.createBase Length "m"
         let m = meter
 
-        let centimeter = Unit.create meter centi
+        let centimeter = centi @@ meter
         let cm = centimeter
 
         let second = Unit.createBase Time "s"
         let sec = second
         let s = second
 
-        let minute = Unit.create second 60N
+        let minute = 60N @@ second
         let min = minute
 
-        let hour = Unit.create minute 60N
+        let hour = 60N @@ minute
         let hr = hour
 
         let kilogram = Unit.createBase Mass "kg"
         let kg = kilogram
 
-        let gram = Unit.create kg milli
+        let gram = milli @@ kg
         let g = gram
 
-        let water = Unit.mult gram (cm ^ -3)
+        let cc = 1N @@ (cm^3)
+        let liter = 1000N @@ cc
+        let magnum = (3N/2N) @@ liter
+
+        let density =
+            Unit.div gram cc
+                |> Unit.create
+        let water = density 1N
+        let alcohol = density (dec 0.7893m)
 
     module Imperial =
 
         open SI
 
-        let inch = Unit.create centimeter (dec 2.54m)
+        let inch = (dec 2.54m) @@ centimeter
 
-        let foot = Unit.create inch 12N
+        let foot = 12N @@ inch
         let ft = foot
 
-        let mile = Unit.create ft 5280N
+        let mile = 5280N @@ ft
 
-        let gallon = Unit.create (inch^3) 231N
+        let gallon = 231N @@ (inch^3)
         let gal = gallon
 
-        let pound = Unit.create kg (dec 0.45359237m)
+        let quart = (1N/4N) @@ gal
+        let qt = quart
+
+        let pint = (1N/2N) @@ qt
+        let pt = pint
+
+        let fluidounce = (1N/16N) @@ pint
+        let floz = fluidounce
+
+        let pound = (dec 0.45359237m) @@ kg 
         let lb = pound

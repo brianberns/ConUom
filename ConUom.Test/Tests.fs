@@ -8,6 +8,7 @@ open MathNet.Numerics
 
 open ConUom
 
+open Standard
 open Standard.SI
 open Standard.Imperial
 
@@ -72,7 +73,7 @@ type TestClass () =
 
     [<TestMethod>]
     member __.MetersPerSecondPerSecond() =
-        let unit = Unit.div (Unit.div m s) s
+        let unit = (m / s) / s
         Assert.AreEqual(
             Set [
                 BaseUnit.create Length "m", 1
@@ -117,3 +118,13 @@ type TestClass () =
         Assert.AreEqual(
             2718417272832N/45359237N @ lb,
             (10N @ ft) * (12N @ ft) * (8N @ ft) * (1N @ water) |> Measurement.convert lb)
+
+    [<TestMethod>]
+    member __.Liquor() =
+        Assert.AreEqual(
+            Unit.createEmpty (10000N/7893N),
+            water/alcohol)
+        let beer = (12N @@ floz) * (dec 3.2m @@ percent) * (water/alcohol)
+        Assert.AreEqual(
+            (2219906250N/157725491N) @ beer,
+            (1N @ magnum) * (dec 13.5m @ percent) |> Measurement.convert beer)
