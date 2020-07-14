@@ -1,6 +1,6 @@
 ﻿namespace ConUom
 
-/// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306#2812306
+/// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306
 /// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
 
 /// Extended product operator.

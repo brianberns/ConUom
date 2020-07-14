@@ -122,8 +122,27 @@ module Unit =
 [<AutoOpen>]
 module UnitAutoOpen =
 
-    /// Shorthand for creating a unit.
-    let (@@) scale unit = Unit.create unit scale
-
     /// Raises a unit to a power.
     let (^) = Unit.(^)
+
+/// Extended @@ operator.
+type AtAtExt =
+    | AtAtExt
+
+    static member (=>) (scale, _ : AtAtExt) =
+        fun unit -> Unit.create unit scale
+
+    static member (=>) (scale, _ : AtAtExt) =
+        fun unit -> Unit.create unit (dec scale)
+
+    /// Dummy member to create ambiguity between the overloads.
+    static member (=>) (_ : AtAtExt, _ : AtAtExt) =
+        failwith "Unexpected"
+        id<AtAtExt>
+
+[<AutoOpen>]
+module AtAtExt =
+
+    /// Extended @@ operator.
+    let inline (@@) a b =
+        (a => AtAtExt) b

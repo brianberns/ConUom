@@ -83,7 +83,7 @@ type TestClass () =
         Assert.AreEqual(
             Unit.createScale (10000N/7893N),
             water/alcohol)
-        let beer = (12N @@ floz) * (dec 3.2m @@ percent) * (water/alcohol)
+        let beer = (12N @@ floz) * (3.2m @@ percent) * (water/alcohol)
         Assert.AreEqual(
             (2219906250N/157725491N) @ beer,
             (1N @ magnum) * (dec 13.5m @ percent) |> Measurement.convert beer)

@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="BigRational.fs" />
     <Compile Include="BaseUnit.fs" />
     <Compile Include="Unit.fs" />
-    <Compile Include="BigRational.fs" />
     <Compile Include="Units.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="Operators.fs" />

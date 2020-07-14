@@ -76,7 +76,7 @@ module Length =
 
     open ConUom.Units.SI.Length
 
-    let inch = (dec 2.54m) @@ centimeter
+    let inch = 2.54m @@ centimeter
 
     let foot = 12N @@ inch
     let ft = foot
@@ -87,7 +87,7 @@ module Mass =
 
     open ConUom.Units.SI.Mass
 
-    let pound = (dec 0.45359237m) @@ kg 
+    let pound = 0.45359237m @@ kg 
     let lb = pound
 
 module Volume =
@@ -97,10 +97,10 @@ module Volume =
     let gallon = 231N @@ (inch^3)
     let gal = gallon
 
-    let quart = (1N/4N) @@ gal
+    let quart = 0.25m @@ gal
     let qt = quart
 
-    let pint = (1N/2N) @@ qt
+    let pint = 0.5m @@ qt
     let pt = pint
 
     let fluidounce = (1N/16N) @@ pint
@@ -109,7 +109,6 @@ module Volume =
 namespace ConUom.Units.Liquor
 
 open ConUom
-open MathNet.Numerics
 
 [<AutoOpen>]
 module General =
@@ -117,5 +116,5 @@ module General =
     open ConUom.Units.SI.Density
     open ConUom.Units.SI.Volume
 
-    let magnum = (3N/2N) @@ liter
-    let alcohol = (dec 0.7893m) @@ density
+    let magnum = 1.5m @@ liter
+    let alcohol = 0.7893m @@ density
