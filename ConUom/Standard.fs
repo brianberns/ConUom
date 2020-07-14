@@ -38,7 +38,14 @@ module Standard =
         let cm = centimeter
 
         let second = Unit.createBase Time "s"
+        let sec = second
         let s = second
+
+        let minute = Unit.create second 60N "min"
+        let min = minute
+
+        let hour = Unit.create minute 60N "hr"
+        let hr = hour
 
     module Imperial =
 
@@ -48,6 +55,8 @@ module Standard =
 
         let foot = Unit.create inch 12N "ft"
         let ft = foot
+
+        let mile = Unit.create ft 5280N "mile"
 
 (*
     let kilo = Product (Var, Const 1000N)

@@ -31,25 +31,37 @@ type TestClass () =
         Assert.AreEqual("ft^2", unit.Name)
 
     [<TestMethod>]
-    member __.MetersPerSecond() =
-        let unit = Unit.div m s
+    member __.MilesPerHour() =
+
+        let unit = Unit.div mile hr
         Assert.AreEqual(
             Set [
                 BaseUnit.create Length "m", 1
                 BaseUnit.create Time "s", -1
             ],
             unit.BaseMap |> Map.toSeq |> Set)
+        Assert.AreEqual(dec 0.44704m, unit.Scale)
+        Assert.AreEqual("mile/hr", unit.Name)
+
+        let unit = Unit.mult unit min
+        Assert.AreEqual(
+            Set [ BaseUnit.create Length "m", 1 ],
+            unit.BaseMap |> Map.toSeq |> Set)
+        Assert.AreEqual(dec 1609.344m / 60N, unit.Scale)
+
+    [<TestMethod>]
+    member __.MetersPerSecondPerSecond() =
+        let unit = Unit.div m (s^2)
+        Assert.AreEqual(
+            Set [
+                BaseUnit.create Length "m", 1
+                BaseUnit.create Time "s", -2
+            ],
+            unit.BaseMap |> Map.toSeq |> Set)
         Assert.AreEqual(1N, unit.Scale)
-        Assert.AreEqual("m/s", unit.Name)
+        Assert.AreEqual("m/s^2", unit.Name)
 
     (*
-    [<TestMethod>]
-    member __.Invert() =
-        let cToF = Sum (Product (Var, Expr.decimal 1.8m), Const 32N)
-        let fToC = Quotient ((Difference (Var, Const 32N)), Expr.decimal 1.8m)
-        Assert.AreEqual(fToC, Expr.invert cToF)
-        Assert.AreEqual(cToF, Expr.invert fToC)
-
     [<TestMethod>]
     member __.ConvertLength() =
         Assert.AreEqual(
