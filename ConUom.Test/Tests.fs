@@ -1,5 +1,7 @@
 namespace ConUom.Test
 
+open System
+
 open Microsoft.VisualStudio.TestTools.UnitTesting
 
 open MathNet.Numerics
@@ -11,6 +13,28 @@ open Standard.Imperial
 
 [<TestClass>]
 type TestClass () =
+
+    [<TestMethod>]
+    member __.FromDecimal() =
+        let pairs =
+            [
+                1M, 1N
+                100000000000000M, 100000000000000N
+                10000000000000000000000000000M, 10000000000000000000000000000N
+                100000000000000.00000000000000M, 100000000000000N
+                1.0000000000000000000000000000M, 1N
+                123456789M, 123456789N
+                0.123456789M, 123456789N/1000000000N
+                0.000000000123456789M, 123456789N/1000000000000000000N
+                0.000000000000000000123456789M, 123456789N/1000000000000000000000000000N
+                4294967295M, 4294967295N
+                18446744073709551615M, 18446744073709551615N
+                Decimal.MaxValue, 79228162514264337593543950335N
+                Decimal.MinValue, -79228162514264337593543950335N
+                -7.9228162514264337593543950335M, -79228162514264337593543950335N/10000000000000000000000000000N
+            ]
+        for (decimal, rational) in pairs do
+            Assert.AreEqual(rational, dec decimal)
 
     [<TestMethod>]
     member __.Foot() =

@@ -14,9 +14,10 @@ module BigRationalExt =
         static member FromDecimal(n : decimal) =
             let parts = Decimal.GetBits(n)
             assert(parts.Length = 4)
-            let lo =  (bigint parts.[0]) <<<  0
-            let mid = (bigint parts.[1]) <<< 32
-            let hi =  (bigint parts.[2]) <<< 64
+            let toBigInt = uint >> bigint
+            let lo =  (toBigInt parts.[0]) <<<  0
+            let mid = (toBigInt parts.[1]) <<< 32
+            let hi =  (toBigInt parts.[2]) <<< 64
             let sign = if (parts.[3] &&& 0x80000000) = 0 then 1I else -1I
             let scale = (parts.[3] >>> 16) &&& 0x7F
             BigRational.FromBigIntFraction(
