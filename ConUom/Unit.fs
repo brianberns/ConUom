@@ -127,19 +127,19 @@ type UnitExt =
     | UnitExt
 
     /// Create unit from rational.
-    static member (=>) (scale, _ : UnitExt) =
+    static member (&%) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit scale
 
     /// Create unit from decimal.
-    static member (=>) (scale, _ : UnitExt) =
+    static member (&%) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit (BigRational.FromDecimal scale)
 
     /// Create unit from integer.
-    static member (=>) (scale, _ : UnitExt) =
+    static member (&%) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit (BigRational.FromInt scale)
 
     /// Dummy member to create ambiguity between the overloads.
-    static member (=>) (_ : UnitExt, _ : UnitExt) =
+    static member (&%) (_ : UnitExt, _ : UnitExt) =
         failwith "Unexpected"
         id<UnitExt>
 
@@ -148,7 +148,7 @@ module UnitExt =
 
     /// Creates a unit.
     let inline (@@) a b =
-        (a => UnitExt) b
+        (a &% UnitExt) b
 
     /// Raises a unit to a power.
     let (^) = Unit.(^)

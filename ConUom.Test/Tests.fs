@@ -45,29 +45,29 @@ type TestClass () =
     member __.Length() =
         Assert.AreEqual(
             5.08m @ cm,
-            (2 @ inch) @! centimeter)
+            (2 @ inch) => centimeter)
         Assert.AreEqual(
             2 @ inch,
-            (5.08m @ cm) @! inch)
+            (5.08m @ cm) => inch)
 
     [<TestMethod>]
     member __.Area() =
         let ratio = BigRational.FromDecimal(2.54m)
         Assert.AreEqual(
             6N * ratio * ratio @ cm^2,
-            (2 @ inch) * (3 @ inch) @! cm^2)
+            (2 @ inch) * (3 @ inch) => cm^2)
         Assert.AreEqual(
             (2 @ inch) * (3 @ inch),
-            (6N * ratio * ratio @ cm^2) @! inch^2)
+            (6N * ratio * ratio @ cm^2) => inch^2)
 
     [<TestMethod>]
     member __.Volume() =
         Assert.AreEqual(
             552960N/77N @ gal,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) @! gal)
+            (10 @ ft) * (12 @ ft) * (8 @ ft) => gal)
         Assert.AreEqual(
             (10 @ ft) * (12 @ ft) * (8 @ ft),
-            (552960N/77N @ gal) @! ft^3)
+            (552960N/77N @ gal) => ft^3)
 
     [<TestMethod>]
     member __.Density() =
@@ -76,7 +76,7 @@ type TestClass () =
             (1 @ cm^3) * (1 @ water))
         Assert.AreEqual(
             2718417272832N/45359237N @ lb,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) * (1 @ water) @! lb)
+            (10 @ ft) * (12 @ ft) * (8 @ ft) * (1 @ water) => lb)
 
     [<TestMethod>]
     member __.Liquor() =
@@ -88,4 +88,4 @@ type TestClass () =
         let beer = (12 @@ floz) * (3.2m @@ percent) * (water/alcohol)
         Assert.AreEqual(
             (2219906250N/157725491N) @ beer,
-            (1 @ magnum) * (13.5m @ percent) @! beer)
+            (1 @ magnum) * (13.5m @ percent) => beer)

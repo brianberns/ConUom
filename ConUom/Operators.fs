@@ -5,19 +5,19 @@ type ProductExt =
     | ProductExt
 
     /// Normal arithmetic product.
-    static member inline (=>) (a, _ : ProductExt) =
+    static member inline (&%) (a, _ : ProductExt) =
         fun b -> a * b
 
     /// Unit product.
-    static member (=>) (unitA, _ : ProductExt) =
+    static member (&%) (unitA, _ : ProductExt) =
         fun unitB -> Unit.mult unitA unitB
 
     /// Measurement product.
-    static member (=>) (measA, _ : ProductExt) =
+    static member (&%) (measA, _ : ProductExt) =
         fun measB -> Measurement.mult measA measB
 
     /// Dummy member to create ambiguity between the overloads.
-    static member (=>) (_ : ProductExt, _ : ProductExt) =
+    static member (&%) (_ : ProductExt, _ : ProductExt) =
         failwith "Unexpected"
         id<ProductExt>
 
@@ -26,26 +26,26 @@ module ProductExt =
 
     /// Extended product operator.
     let inline (*) a b =
-        (a => ProductExt) b
+        (a &% ProductExt) b
 
 /// Extended quotient operator.
 type QuotientExt =
     | QuotientExt
 
     /// Normal arithmetic quotient.
-    static member inline (=>) (a, _ : QuotientExt) =
+    static member inline (&%) (a, _ : QuotientExt) =
         fun b -> a / b
 
     /// Unit quotient.
-    static member (=>) (unitA, _ : QuotientExt) =
+    static member (&%) (unitA, _ : QuotientExt) =
         fun unitB -> Unit.div unitA unitB
 
     /// Measurement quotient.
-    static member (=>) (measA, _ : QuotientExt) =
+    static member (&%) (measA, _ : QuotientExt) =
         fun measB -> Measurement.div measA measB
 
     /// Dummy member to create ambiguity between the overloads.
-    static member (=>) (_ : QuotientExt, _ : QuotientExt) =
+    static member (&%) (_ : QuotientExt, _ : QuotientExt) =
         failwith "Unexpected"
         id<QuotientExt>
 
@@ -54,4 +54,4 @@ module QuotientExt =
 
     /// Extended quotient operator.
     let inline (/) a b =
-        (a => QuotientExt) b
+        (a &% QuotientExt) b

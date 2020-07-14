@@ -52,19 +52,19 @@ type MeasurementExt =
     | MeasurementExt
 
     /// Create measurement from rational.
-    static member (=>) (value, _ : MeasurementExt) =
+    static member (&%) (value, _ : MeasurementExt) =
         fun unit -> Measurement.create value unit
 
     /// Create measurement from decimal.
-    static member (=>) (value, _ : MeasurementExt) =
+    static member (&%) (value, _ : MeasurementExt) =
         fun unit -> Measurement.create (BigRational.FromDecimal value) unit
 
     /// Create measurement from integer.
-    static member (=>) (value, _ : MeasurementExt) =
+    static member (&%) (value, _ : MeasurementExt) =
         fun unit -> Measurement.create (BigRational.FromInt value) unit
 
     /// Dummy member to create ambiguity between the overloads.
-    static member (=>) (_ : MeasurementExt, _ : MeasurementExt) =
+    static member (&%) (_ : MeasurementExt, _ : MeasurementExt) =
         failwith "Unexpected"
         id<MeasurementExt>
 
@@ -73,8 +73,8 @@ module MeasurementExt =
 
     /// Creates a measurement.
     let inline (@) a b =
-        (a => MeasurementExt) b
+        (a &% MeasurementExt) b
 
     /// Converts the given measurement to the given unit.
-    let (@!) meas unit =
+    let (=>) meas unit =
         Measurement.convert unit meas
