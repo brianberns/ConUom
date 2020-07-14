@@ -40,23 +40,23 @@ module Standard =
         let meter = Unit.createBase Length "m"
         let m = meter
 
-        let centimeter = Unit.create meter centi "cm"
+        let centimeter = Unit.create meter centi
         let cm = centimeter
 
         let second = Unit.createBase Time "s"
         let sec = second
         let s = second
 
-        let minute = Unit.create second 60N "min"
+        let minute = Unit.create second 60N
         let min = minute
 
-        let hour = Unit.create minute 60N "hr"
+        let hour = Unit.create minute 60N
         let hr = hour
 
         let kilogram = Unit.createBase Mass "kg"
         let kg = kilogram
 
-        let gram = Unit.create kg milli "g"
+        let gram = Unit.create kg milli
         let g = gram
 
         let water = Unit.mult gram cm^(-3)
@@ -65,15 +65,15 @@ module Standard =
 
         open SI
 
-        let inch = Unit.create centimeter (dec 2.54m) "in"
+        let inch = Unit.create centimeter (dec 2.54m)
 
-        let foot = Unit.create inch 12N "ft"
+        let foot = Unit.create inch 12N
         let ft = foot
 
-        let mile = Unit.create ft 5280N "mile"
+        let mile = Unit.create ft 5280N
 
-        let gallon = Unit.create (inch^3) 231N "gal"
+        let gallon = Unit.create (inch^3) 231N
         let gal = gallon
 
-        let pound = Unit.create kg (dec 0.45359237m) "lb"
+        let pound = Unit.create kg (dec 0.45359237m)
         let lb = pound

@@ -30,8 +30,6 @@ type Unit =
 
         /// Factor to convert from outer unit to base units. E.g. 1000x for km -> m.
         Scale : BigRational
-
-        Name : string
     }
 
     member this.BaseUnits =
@@ -39,27 +37,40 @@ type Unit =
             |> Map.toSeq
             |> Set
 
+    /// Name of this unit.
+    member this.Name =
+        if this.BaseMap.IsEmpty
+            then "1"
+        else
+            let units =
+                let names =
+                    this.BaseMap
+                        |> Map.toSeq
+                        |> Seq.map (fun (baseUnit, power) ->
+                            let name = baseUnit.Name
+                            if power = 1 then name
+                            else sprintf "(%s)^%d" name power)
+                String.Join(" ", names)
+            sprintf "%A %s" this.Scale units
+
 module Unit =
 
     let one =
         {
             BaseMap = Map.empty
             Scale = 1N
-            Name = "1"
         }
 
     let createBase dim name =
         {
             BaseMap =  Map [ BaseUnit.create dim name, 1 ]
             Scale = 1N
-            Name = name
         }
 
-    let create unit scale name =
+    let create unit scale =
         {
             BaseMap = unit.BaseMap
             Scale = scale * unit.Scale
-            Name = name
         }
 
     let mult unitA unitB =
@@ -85,7 +96,6 @@ module Unit =
         {
             BaseMap = baseMap
             Scale = unitA.Scale * unitB.Scale
-            Name = sprintf "%s %s" unitA.Name unitB.Name
         }
 
     let invert unit =
@@ -97,14 +107,10 @@ module Unit =
                         baseUnit, -power)
                     |> Map
             Scale = 1N / unit.Scale
-            Name = sprintf "1/%s" unit.Name
         }
 
     let div unitA unitB =
-        {
-            mult unitA (invert unitB) with
-                Name = sprintf "%s/%s" unitA.Name unitB.Name
-        }
+        mult unitA (invert unitB)
 
     let (^) unit power =
         if power = 0 then one   // a^0 -> 1
@@ -119,7 +125,6 @@ module Unit =
             {
                 BaseMap = baseMap
                 Scale = unit.Scale ** power
-                Name = sprintf "%s^%d" unit.Name power
             }
 
 [<AutoOpen>]

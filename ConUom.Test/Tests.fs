@@ -43,7 +43,6 @@ type TestClass () =
             Set [BaseUnit.create Length "m", 1],
             unit.BaseUnits)
         Assert.AreEqual(dec 0.3048m, unit.Scale)
-        Assert.AreEqual("ft", unit.Name)
 
     [<TestMethod>]
     member __.SquareFoot() =
@@ -52,7 +51,6 @@ type TestClass () =
             Set [BaseUnit.create Length "m", 2],
             unit.BaseUnits)
         Assert.AreEqual(dec 0.3048m ** 2, unit.Scale)
-        Assert.AreEqual("ft^2", unit.Name)
 
     [<TestMethod>]
     member __.MilesPerHour() =
@@ -65,7 +63,6 @@ type TestClass () =
             ],
             unit.BaseUnits)
         Assert.AreEqual(dec 0.44704m, unit.Scale)
-        Assert.AreEqual("mile/hr", unit.Name)
 
         let unit = unit * min
         Assert.AreEqual(
@@ -75,7 +72,7 @@ type TestClass () =
 
     [<TestMethod>]
     member __.MetersPerSecondPerSecond() =
-        let unit = Unit.div m (s^2)
+        let unit = Unit.div (Unit.div m s) s
         Assert.AreEqual(
             Set [
                 BaseUnit.create Length "m", 1
@@ -83,7 +80,6 @@ type TestClass () =
             ],
             unit.BaseUnits)
         Assert.AreEqual(1N, unit.Scale)
-        Assert.AreEqual("m/s^2", unit.Name)
 
     [<TestMethod>]
     member __.ConvertLength() =
