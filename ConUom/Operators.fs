@@ -1,7 +1,5 @@
 ﻿namespace ConUom
 
-open MathNet.Numerics
-
 /// Extended product operator.
 type ProductExt =
     | ProductExt
@@ -57,31 +55,3 @@ module QuotientExt =
     /// Extended quotient operator.
     let inline (/) a b =
         (a => QuotientExt) b
-
-/// Extended @ operator.
-type AtExt =
-    | AtExt
-
-    /// Create measurement from rational.
-    static member (=>) (value, _ : AtExt) =
-        fun unit -> Measurement.create value unit
-
-    /// Create measurement from decimal.
-    static member (=>) (value, _ : AtExt) =
-        fun unit -> Measurement.create (BigRational.FromDecimal value) unit
-
-    /// Create measurement from integer.
-    static member (=>) (value, _ : AtExt) =
-        fun unit -> Measurement.create (BigRational.FromInt value) unit
-
-    /// Dummy member to create ambiguity between the overloads.
-    static member (=>) (_ : AtExt, _ : AtExt) =
-        failwith "Unexpected"
-        id<AtExt>
-
-[<AutoOpen>]
-module AtExt =
-
-    /// Extended @ operator.
-    let inline (@) a b =
-        (a => AtExt) b

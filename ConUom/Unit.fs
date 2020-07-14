@@ -119,39 +119,36 @@ module Unit =
                 Scale = unit.Scale ** power
             }
 
-[<AutoOpen>]
-module UnitExt =
-
-    /// Raises a unit to a power.
-    let (^) = Unit.(^)
-
 /// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306
 /// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
 
-/// Extended @@ operator.
-type AtAtExt =
-    | AtAtExt
+/// Unit creation operator.
+type UnitExt =
+    | UnitExt
 
     /// Create unit from rational.
-    static member (=>) (scale, _ : AtAtExt) =
+    static member (=>) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit scale
 
     /// Create unit from decimal.
-    static member (=>) (scale, _ : AtAtExt) =
+    static member (=>) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit (BigRational.FromDecimal scale)
 
     /// Create unit from integer.
-    static member (=>) (scale, _ : AtAtExt) =
+    static member (=>) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit (BigRational.FromInt scale)
 
     /// Dummy member to create ambiguity between the overloads.
-    static member (=>) (_ : AtAtExt, _ : AtAtExt) =
+    static member (=>) (_ : UnitExt, _ : UnitExt) =
         failwith "Unexpected"
-        id<AtAtExt>
+        id<UnitExt>
 
 [<AutoOpen>]
-module AtAtExt =
+module UnitExt =
 
-    /// Extended @@ operator.
+    /// Creates a unit.
     let inline (@@) a b =
-        (a => AtAtExt) b
+        (a => UnitExt) b
+
+    /// Raises a unit to a power.
+    let (^) = Unit.(^)
