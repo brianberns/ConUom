@@ -10,6 +10,7 @@
     <Compile Include="BigRational.fs" />
     <Compile Include="Units.fs" />
     <Compile Include="Measurement.fs" />
+    <Compile Include="Operators.fs" />
   </ItemGroup>
 
   <ItemGroup>

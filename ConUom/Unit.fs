@@ -55,7 +55,7 @@ module Unit =
         }
 
     /// Creates a dimensionless unit.
-    let createEmpty scale =
+    let createScale scale =
         {
             BaseMap = Map.empty
             Scale = scale
@@ -105,7 +105,7 @@ module Unit =
     /// Raises a unit to a power.
     let (^) unit power =
         if power = 0 then   // a^0 -> 1
-            createEmpty 1N
+            createScale 1N
         else
             let baseMap =
                 unit.BaseMap

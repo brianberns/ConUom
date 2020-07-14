@@ -81,7 +81,7 @@ type TestClass () =
     [<TestMethod>]
     member __.Liquor() =
         Assert.AreEqual(
-            Unit.createEmpty (10000N/7893N),
+            Unit.createScale (10000N/7893N),
             water/alcohol)
         let beer = (12N @@ floz) * (dec 3.2m @@ percent) * (water/alcohol)
         Assert.AreEqual(
