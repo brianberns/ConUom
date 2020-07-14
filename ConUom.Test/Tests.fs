@@ -38,52 +38,7 @@ type TestClass () =
             Assert.AreEqual(rational, dec decimal)
 
     [<TestMethod>]
-    member __.Foot() =
-        let unit = ft
-        Assert.AreEqual(
-            Set [BaseUnit.create Length "m", 1],
-            unit.BaseUnits)
-        Assert.AreEqual(dec 0.3048m, unit.Scale)
-
-    [<TestMethod>]
-    member __.SquareFoot() =
-        let unit = ft ^ 2
-        Assert.AreEqual(
-            Set [BaseUnit.create Length "m", 2],
-            unit.BaseUnits)
-        Assert.AreEqual(dec 0.3048m ** 2, unit.Scale)
-
-    [<TestMethod>]
-    member __.MilesPerHour() =
-
-        let unit = Unit.div mile hr
-        Assert.AreEqual(
-            Set [
-                BaseUnit.create Length "m", 1
-                BaseUnit.create Time "s", -1
-            ],
-            unit.BaseUnits)
-        Assert.AreEqual(dec 0.44704m, unit.Scale)
-
-        let unit = unit * min
-        Assert.AreEqual(
-            Set [ BaseUnit.create Length "m", 1 ],
-            unit.BaseUnits)
-        Assert.AreEqual(dec 1609.344m / 60N, unit.Scale)
-
-    [<TestMethod>]
-    member __.MetersPerSecondPerSecond() =
-        let unit = (m / s) / s
-        Assert.AreEqual(
-            Set [
-                BaseUnit.create Length "m", 1
-                BaseUnit.create Time "s", -2
-            ],
-            unit.BaseUnits)
-        Assert.AreEqual(1N, unit.Scale)
-
-    [<TestMethod>]
-    member __.ConvertLength() =
+    member __.Length() =
         Assert.AreEqual(
             BigRational.FromDecimal(5.08m) @ cm,
             2N @ inch |> Measurement.convert centimeter)
@@ -92,7 +47,7 @@ type TestClass () =
             BigRational.FromDecimal(5.08m) @ cm |> Measurement.convert inch)
 
     [<TestMethod>]
-    member __.ConvertArea() =
+    member __.Area() =
         let ratio = BigRational.FromDecimal(2.54m)
         Assert.AreEqual(
             (6N * ratio * ratio) @ cm^2,
@@ -102,7 +57,7 @@ type TestClass () =
             (6N * ratio * ratio) @ cm^2 |> Measurement.convert (inch^2))
 
     [<TestMethod>]
-    member __.ConvertVolume() =
+    member __.Volume() =
         Assert.AreEqual(
             552960N/77N @ gal,
             (10N @ ft) * (12N @ ft) * (8N @ ft) |> Measurement.convert gal)

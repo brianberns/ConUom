@@ -3,34 +3,20 @@
 open System
 open MathNet.Numerics
 
-type BaseDimension =
-    | Length
-    | Mass
-    | Time
-
-type BaseUnit =
-    {
-        BaseDimension : BaseDimension
-        Name : string
-    }
-
-module BaseUnit =
-
-    let create dim name =
-        {
-            BaseDimension = dim
-            Name = name
-        }
-
+/// A unit of measurement.
 [<StructuredFormatDisplay("{Name}")>]
 type Unit =
-    {
+    private {
+        /// Base units that this unit derives from. E.g. Units
+        /// of acceleration are based on: m^1, s^-2.
         BaseMap : Map<BaseUnit, int (*power*)>
 
-        /// Factor to convert from outer unit to base units. E.g. 1000x for km -> m.
+        /// Factor to convert from this unit to base units. E.g.
+        /// 1000x for km -> m.
         Scale : BigRational
     }
 
+    /// This unit's set of base units.
     member this.BaseUnits =
         this.BaseMap
             |> Map.toSeq
@@ -50,16 +36,18 @@ type Unit =
                             if power = 1 then name
                             else sprintf "%s^%d" name power)
                 String.Join(" ", names)
-            sprintf "%A %s" this.Scale units
+            sprintf "%A @@ %s" this.Scale units
 
 module Unit =
 
+    /// Creates a base unit.
     let createBase dim name =
         {
             BaseMap =  Map [ BaseUnit.create dim name, 1 ]
             Scale = 1N
         }
 
+    /// Creates a new unit based on the given unit.
     let create unit scale =
         {
             BaseMap = unit.BaseMap
@@ -73,6 +61,7 @@ module Unit =
             Scale = scale
         }
 
+    /// Multiplies two units.
     let mult unitA unitB =
         let baseMap =
             (unitA.BaseMap, unitB.BaseMap |> Map.toSeq)
@@ -98,20 +87,22 @@ module Unit =
             Scale = unitA.Scale * unitB.Scale
         }
 
+    /// Inverts a unit. E.g. ft^2 -> ft^-2.
     let invert unit =
         {
             BaseMap =
-                unit.BaseMap
-                    |> Map.toSeq
+                (unit : Unit).BaseUnits
                     |> Seq.map (fun (baseUnit, power) ->
                         baseUnit, -power)
                     |> Map
             Scale = 1N / unit.Scale
         }
 
-    let div unitA unitB =
-        mult unitA (invert unitB)
+    /// Divides one unit by another.
+    let div numUnit denUnit =
+        mult numUnit (invert denUnit)
 
+    /// Raises a unit to a power.
     let (^) unit power =
         if power = 0 then   // a^0 -> 1
             createEmpty 1N
@@ -131,6 +122,8 @@ module Unit =
 [<AutoOpen>]
 module UnitAutoOpen =
 
+    /// Shorthand for creating a unit.
     let (@@) scale unit = Unit.create unit scale
 
+    /// Raises a unit to a power.
     let (^) = Unit.(^)
