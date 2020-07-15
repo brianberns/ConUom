@@ -107,10 +107,14 @@ module Unit =
     let div numUnit denUnit =
         mult numUnit (invert denUnit)
 
+    /// Dimensionless unit of scale one.
+    let one =
+        createScale 1N
+
     /// Raises a unit to a power.
     let (^) unit power =
         if power = 0 then   // a^0 -> 1
-            createScale 1N
+            one
         else
             let baseMap =
                 unit.BaseMap
@@ -131,17 +135,17 @@ module Unit =
 type UnitExt =
     | UnitExt
 
-    /// Create unit from rational.
+    /// Creates a unit from a rational.
     static member (&%) (scale, _ : UnitExt) =
         fun unit -> Unit.create unit scale
 
-    /// Create unit from decimal.
+    /// Creates a unit from a decimal.
     static member (&%) (scale, _ : UnitExt) =
-        fun unit -> Unit.create unit (BigRational.FromDecimal scale)
+        BigRational.FromDecimal(scale) &% UnitExt
 
-    /// Create unit from integer.
+    /// Creates a unit from an integer.
     static member (&%) (scale, _ : UnitExt) =
-        fun unit -> Unit.create unit (BigRational.FromInt scale)
+        BigRational.FromInt(scale) &% UnitExt
 
     /// Dummy member to create ambiguity between the overloads.
     static member (&%) (_ : UnitExt, _ : UnitExt) =

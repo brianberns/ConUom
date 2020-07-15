@@ -13,7 +13,8 @@ module General =
     let centi = 1N/ 100N
     let milli = 1N/1000N
 
-    let percent = Unit.createScale centi
+    let one = Unit.one
+    let percent = centi @@ one
 
 /// International System of Units.
 namespace ConUom.Units.SI

@@ -55,17 +55,17 @@ module Measurement =
 type MeasurementExt =
     | MeasurementExt
 
-    /// Create measurement from rational.
+    /// Creates a measurement from a rational.
     static member (&%) (value, _ : MeasurementExt) =
         fun unit -> Measurement.create value unit
 
-    /// Create measurement from decimal.
+    /// Creates a measurement from decimal.
     static member (&%) (value, _ : MeasurementExt) =
-        fun unit -> Measurement.create (BigRational.FromDecimal value) unit
+        BigRational.FromDecimal(value) &% MeasurementExt
 
-    /// Create measurement from integer.
+    /// Creates a measurement from an integer.
     static member (&%) (value, _ : MeasurementExt) =
-        fun unit -> Measurement.create (BigRational.FromInt value) unit
+        BigRational.FromInt(value) &% MeasurementExt
 
     /// Dummy member to create ambiguity between the overloads.
     static member (&%) (_ : MeasurementExt, _ : MeasurementExt) =
