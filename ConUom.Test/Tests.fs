@@ -1,23 +1,42 @@
 namespace ConUom.Test
 
 open System
-
 open Microsoft.VisualStudio.TestTools.UnitTesting
-
 open MathNet.Numerics
-
 open ConUom
-open ConUom.Measurements.Density
-open ConUom.Units
-open ConUom.Units.SI.Length
-open ConUom.Units.SI.Mass
-open ConUom.Units.SI.Volume
-open ConUom.Units.USCS.Length
-open ConUom.Units.USCS.Mass
-open ConUom.Units.USCS.Volume
 
 [<TestClass>]
 type TestClass () =
+
+    let centi = 1N/ 100N
+    let milli = 1N/1000N
+
+    let one = Unit.one
+    let percent = centi @@ one
+
+    let meter = Unit.createBase "Length" "m"
+    let cm = centi @@ meter
+
+    let kg = Unit.createBase "Mass" "kg"
+    let g = milli @@ kg
+
+    let cc = 1N @@ cm^3
+    let liter = 1000N @@ cc
+
+    let inch = 2.54m @@ cm
+    let foot = 12N @@ inch
+    let ft = foot
+
+    let pound = 0.45359237m @@ kg 
+    let lb = pound
+    let ton = 2000 @@ lb
+
+    let gal = 231N @@ inch^3
+    let qt = 0.25m @@ gal
+    let pint = 0.5m @@ qt
+    let floz = (1N/16N) @@ pint
+    let water = 1 @ g/cc
+    let alcohol = 0.7893m @ g/cc
 
     let float = Measurement.float
 
@@ -47,7 +66,7 @@ type TestClass () =
     member __.Length() =
         Assert.AreEqual(
             5.08m @ cm,
-            (2 @ inch) => centimeter)
+            (2 @ inch) => cm)
         Assert.AreEqual(
             2 @ inch,
             (5.08m @ cm) => inch)
@@ -74,7 +93,7 @@ type TestClass () =
     [<TestMethod>]
     member __.Density() =
         Assert.AreEqual(
-            1 @ gram,
+            1 @ g,
             (1 @ cm^3) * water)
         Assert.AreEqual(
             59930.84215309883,
@@ -93,7 +112,7 @@ type TestClass () =
             magnum * (13.5m @ percent) => !@beer |> float)
 
         let proof = 1N/200N @@ one
-        let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gallon)
+        let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
         Assert.AreEqual(
             8.78372074090843481138500000,
             junglejuice => percent |> float)

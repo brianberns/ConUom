@@ -8,13 +8,13 @@
     <Compile Include="BigRational.fs" />
     <Compile Include="BaseUnit.fs" />
     <Compile Include="Unit.fs" />
-    <Compile Include="Units.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="Operators.fs" />
-    <Compile Include="Measurements.fs" />
+    <Compile Include="Frink.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FParsec" Version="1.1.1" />
     <PackageReference Include="MathNet.Numerics" Version="4.11.0" />
     <PackageReference Include="MathNet.Numerics.FSharp" Version="4.11.0" />
   </ItemGroup>
