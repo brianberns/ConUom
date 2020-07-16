@@ -51,6 +51,12 @@ module Measurement =
             (measA.Value / measB.Value)
             (Unit.div measA.Unit measB.Unit)
 
+type Measurement with
+
+    /// Converts the given measurement to the given unit.
+    static member (=>)(meas, unit) =
+        Measurement.convert unit meas
+
 /// Measurement creation operator.
 type MeasurementExt =
     | MeasurementExt
@@ -78,7 +84,3 @@ module MeasurementExt =
     /// Creates a measurement.
     let inline (@) a b =
         (a &% MeasurementExt) b
-
-    /// Converts the given measurement to the given unit.
-    let (=>) meas unit =
-        Measurement.convert unit meas
