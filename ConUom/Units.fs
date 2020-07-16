@@ -59,14 +59,6 @@ module Volume =
     let cc = 1N @@ cm^3
     let liter = 1000N @@ cc
 
-module Density =
-
-    open Mass
-    open Volume
-
-    let density = Unit.div gram cc
-    let water = 1N @@ density
-
 /// United States customary units.
 namespace ConUom.Units.USCS
 

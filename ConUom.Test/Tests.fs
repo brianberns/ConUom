@@ -7,8 +7,8 @@ open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
 
 open ConUom
+open ConUom.Measurements.Density
 open ConUom.Units
-open ConUom.Units.SI.Density
 open ConUom.Units.SI.Length
 open ConUom.Units.SI.Mass
 open ConUom.Units.SI.Volume
@@ -18,6 +18,8 @@ open ConUom.Units.USCS.Volume
 
 [<TestClass>]
 type TestClass () =
+
+    let float = Measurement.float
 
     [<TestMethod>]
     member __.FromDecimal() =
@@ -73,26 +75,29 @@ type TestClass () =
     member __.Density() =
         Assert.AreEqual(
             1 @ gram,
-            (1 @ cm^3) * (1 @ water))
+            (1 @ cm^3) * water)
         Assert.AreEqual(
             59930.84215309883,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) * (1 @ water) => lb |> Measurement.float)
+            (10 @ ft) * (12 @ ft) * (8 @ ft) * water => lb |> float)
         Assert.AreEqual(
             0.5339487791320047,
-            (2 @ ton) / ((10 @ ft) * (12 @ ft) * (1 @ water)) => ft |> Measurement.float)
+            (2 @ ton) / ((10 @ ft) * (12 @ ft) * water) => ft |> float)
 
     [<TestMethod>]
     member __.Liquor() =
 
-        let alcohol = 0.7893m @@ density
-        let beer = (12 @@ floz) * (3.2m @@ percent) * (water/alcohol)
-        let magnum = 1.5m @@ liter
+        let beer = (12 @ floz) * (3.2m @ percent) * (water/alcohol)
+        let magnum = 1.5m @ liter
         Assert.AreEqual(
             14.074492562524341,
-            (1 @ magnum) * (13.5m @ percent) => beer |> Measurement.float)
+            magnum * (13.5m @ percent) => !@beer |> float)
 
-        let proof = Unit.createScale (1N/200N)
+        let proof = 1N/200N @@ one
         let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gallon)
         Assert.AreEqual(
             8.78372074090843481138500000,
-            junglejuice => percent |> Measurement.float)
+            junglejuice => percent |> float)
+
+        Assert.AreEqual(
+            10.83279809499848,
+            (5 @ one) * (12 @ floz) * junglejuice => !@beer |> float)

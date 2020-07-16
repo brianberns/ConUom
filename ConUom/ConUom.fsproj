@@ -11,6 +11,7 @@
     <Compile Include="Units.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="Operators.fs" />
+    <Compile Include="Measurements.fs" />
   </ItemGroup>
 
   <ItemGroup>
