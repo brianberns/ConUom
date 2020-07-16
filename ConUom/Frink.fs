@@ -19,12 +19,19 @@ module private Parser =
 #endif
 
     let skipComment =
-        skipString "//" .>> skipRestOfLine false
+        choice [
+            (skipString "//" .>> skipRestOfLine false)
+            (skipString "/*" >>. skipCharsTillString "*/" true Int32.MaxValue)
+        ]
 
     let identifier =
         let isAsciiIdStart c =
             isAsciiLetter c || c = '\\'
-        identifier (IdentifierOptions(isAsciiIdStart))
+        choice [
+            identifier <| IdentifierOptions(isAsciiIdStart)
+            pstring "1"
+            pstring "<<IMAGINARY_UNIT>>"
+        ]
 
     let skipPrefix =
         identifier
@@ -80,10 +87,14 @@ module private Parser =
             (spaces >>. (skipString ":=") .>> spaces)
             (opt parseBigRational)
             spaces
-            identifier
-            (fun newName _ scaleOpt _ oldName ->
+            (opt identifier)
+            (fun newName _ scaleOpt _ oldNameOpt ->
                 let scale = scaleOpt |> Option.defaultValue 1N
-                let oldUnit : Unit = state |> Map.find oldName
+                let oldUnit =
+                    oldNameOpt
+                        |> Option.map (fun oldName ->
+                            state |> Map.find oldName)
+                        |> Option.defaultValue Unit.one
                 let newUnit = scale @@ oldUnit
                 newName, newUnit)
             |> attempt
@@ -106,7 +117,8 @@ module private Parser =
     let parse str =
         let parser = parseUnits .>> eof   // force consumption of entire string
         let str = if isNull str then "" else str
-        match runParserOnString parser Map.empty "" str with
+        let state = Map [ "<<IMAGINARY_UNIT>>", Unit.one ]
+        match runParserOnString parser state "" str with
             | Success (_, result, _) -> result
             | Failure (msg, _, _) -> failwith msg
 
