@@ -128,36 +128,22 @@ module Unit =
                 Scale = unit.Scale ** power
             }
 
-/// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306
-/// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
+type Unit with
 
-/// Unit creation operator.
-type UnitExt =
-    | UnitExt
+    /// Creates a new unit based on the given unit.
+    static member (@@)(scale, unit) =
+        scale |> Unit.create unit
 
-    /// Creates a unit from a rational.
-    static member (&%) (scale, _ : UnitExt) =
-        fun unit -> Unit.create unit scale
+    /// Creates a new unit based on the given unit.
+    static member (@@)(scale, unit) =
+        BigRational.FromDecimal(scale) |> Unit.create unit
 
-    /// Creates a unit from a decimal.
-    static member (&%) (scale, _ : UnitExt) =
-        BigRational.FromDecimal(scale) &% UnitExt
-
-    /// Creates a unit from an integer.
-    static member (&%) (scale, _ : UnitExt) =
-        BigRational.FromInt(scale) &% UnitExt
-
-    /// Dummy member to create ambiguity between the overloads.
-    static member (&%) (_ : UnitExt, _ : UnitExt) =
-        failwith "Unexpected"
-        id<UnitExt>
+    /// Creates a new unit based on the given unit.
+    static member (@@)(scale, unit) =
+        BigRational.FromInt(scale) |> Unit.create unit
 
 [<AutoOpen>]
 module UnitExt =
-
-    /// Creates a unit.
-    let inline (@@) a b =
-        (a &% UnitExt) b
 
     /// Raises a unit to a power.
     let (^) = Unit.(^)
