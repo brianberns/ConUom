@@ -57,9 +57,16 @@ type Measurement with
     static member (=>)(meas, unit) =
         Measurement.convert unit meas
 
+/// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306#2812306
+/// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
+
 /// Measurement creation operator.
 type MeasurementExt =
     | MeasurementExt
+
+    /// Normal list concatenation operator.
+    static member inline (&%) (a, _ : MeasurementExt) =
+        fun b -> a @ b
 
     /// Creates a measurement from a rational.
     static member (&%) (value, _ : MeasurementExt) =
