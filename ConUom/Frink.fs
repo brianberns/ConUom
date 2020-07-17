@@ -24,6 +24,12 @@ module private Parser =
                 |> Option.defaultWith (fun () ->
                     failwithf "Undefined unit: %s" name)
 
+        let findPrefix name state =
+            state.Prefixes
+                |> Map.tryFind name
+                |> Option.defaultWith (fun () ->
+                    failwithf "Undefined prefix: %s" name)
+
 #if DEBUG
     let (<!>) (p: Parser<_,_>) label : Parser<_,_> =
         fun stream ->
@@ -51,41 +57,11 @@ module private Parser =
             pstring "<<IMAGINARY_UNIT>>"
         ]
 
-    let skipPrefix =
-        identifier
-            .>> spaces
-            .>> (skipString "::-" <|> skipString ":-")
-            .>> skipRestOfLine false
-            >>% ()
-            |> attempt
-
     let skipJunk =
         choice [
             spaces1
             skipComment
-            skipPrefix
         ] |> many
-
-    let addUnit (name : string) (unit : Unit) =
-        updateUserState (fun state ->
-            { state with
-                Units = state.Units |> Map.add name unit })
-
-    let parseBaseUnit =
-        parse {
-            let! dim = identifier
-            do! spaces
-            do! skipString "=!="
-            do! spaces
-            let! name = identifier
-            return name, Unit.createBase dim name
-        } |> attempt
-
-    let consumeBaseUnit =
-        parse {
-            let! name, unit = parseBaseUnit
-            do! addUnit name unit
-        }
 
     let parseBigInt =
         many1Satisfy Char.IsDigit
@@ -110,6 +86,71 @@ module private Parser =
 
     let parseRational =
         parseExponential <|> parseBigRational   // must try exponential first
+
+    let addPrefix state (name, value) =
+        { state with
+            Prefixes = state.Prefixes |> Map.add name value }
+
+    let parseBasePrefix =
+        parse {
+            let! name = identifier
+            do! spaces
+            do! skipString "::-"
+            do! spaces
+            let! value = parseRational
+            return name, value
+        } |> attempt
+
+    let parseDerivedPrefix state =
+        parse {
+            let! newName = identifier
+            do! spaces
+            do! skipString ":-"
+            do! spaces
+            let! valueOpt = opt parseRational
+            let! value =
+                match valueOpt with
+                    | Some value ->
+                        preturn value
+                    | None ->
+                        identifier
+                            |>> (fun oldName ->
+                                state |> State.findPrefix oldName)
+            return newName, value
+        } |> attempt
+
+    let parsePrefix state =
+        parseBasePrefix <|> (parseDerivedPrefix state)
+
+    let consume parser add =
+        parse {
+            let! state = getUserState
+            let! value = parser state
+            return! setUserState <| add state value
+        }
+
+    let consumeStateless parser add =
+        consume (fun _ -> parser) add
+
+    let consumePrefix =
+        consume parsePrefix addPrefix
+
+    let addUnit state (name, unit) =
+        { state with
+            Units = state.Units |> Map.add name unit }
+
+    let parseBaseUnit =
+        parse {
+            let! dim = identifier
+            do! spaces
+            do! skipString "=!="
+            do! spaces
+            let! name = identifier
+            return name, Unit.createBase dim name
+        } |> attempt
+
+    let consumeBaseUnit =
+        consumeStateless parseBaseUnit addUnit
 
     let parseUnitPower state =
         parse {
@@ -170,11 +211,7 @@ module private Parser =
         } |> attempt
 
     let consumeDerivedUnit =
-        parse {
-            let! state = getUserState
-            let! name, unit = parseDerivedUnit state
-            do! addUnit name unit
-        }
+        consume parseDerivedUnit addUnit
 
     let parseCombinationUnit state =
         parse {
@@ -187,14 +224,11 @@ module private Parser =
         } |> attempt
 
     let consumeCombinationUnit =
-        parse {
-            let! state = getUserState
-            let! name, unit = parseCombinationUnit state
-            do! addUnit name unit
-        }
+        consume parseCombinationUnit addUnit
 
     let consumeUnit =
         choice [
+            consumePrefix
             consumeBaseUnit
             consumeDerivedUnit
             consumeCombinationUnit
