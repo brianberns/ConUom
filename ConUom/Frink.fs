@@ -15,6 +15,15 @@ module private Parser =
             Units : Map<string, Unit>
         }
 
+
+    module State =
+
+        let findUnit name state =
+            state.Units
+                |> Map.tryFind name
+                |> Option.defaultWith (fun () ->
+                    failwithf "Undefined unit: %s" name)
+
 #if DEBUG
     let (<!>) (p: Parser<_,_>) label : Parser<_,_> =
         fun stream ->
@@ -89,21 +98,34 @@ module private Parser =
             return BigRational.FromBigIntFraction(num, den)
         }
 
+    let parseExponential =
+        parse {
+            do! skipString "1ee"
+            let! exp = pint32
+            return 1N ** exp
+        }
+
+    let parseRational =
+        parseExponential <|> parseBigRational   // must try exponential first
+
+    /// E.g. kilogram := kg
+    /// E.g. gram := 1/1000 kg
+    /// E.g. radian := 1
     let parseDerivedUnit state =
         parse {
             let! newName = identifier
             do! spaces
             do! skipString ":="
             do! spaces
-            let! scaleOpt = opt parseBigRational
-            do! spaces
+            let! scaleOpt = opt parseRational
+            do! skipMany (skipAnyOf " \t")   // don't allow newline
             let! oldNameOpt = opt identifier
 
             let scale = scaleOpt |> Option.defaultValue 1N
             let oldUnit =
                 oldNameOpt
                     |> Option.map (fun oldName ->
-                        state.Units |> Map.find oldName)
+                        state |> State.findUnit oldName)
                     |> Option.defaultValue Unit.one
             let newUnit = scale @@ oldUnit
             return newName, newUnit
@@ -131,13 +153,8 @@ module private Parser =
         } |> attempt
 
     let parseCombination state =
-        parseUnitPower state
-        (*
-        sepBy1
-            ((parseUnitPower state) <!> "parseUnitPower")
-            (spaces <!> "spaces")
+        many (parseUnitPower state .>> spaces)
             |>> (List.fold (*) Unit.one)
-        *)
 
     let parseCombinationUnit state =
         parse {
