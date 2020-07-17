@@ -15,14 +15,25 @@ module private Parser =
             Units : Map<string, Unit>
         }
 
-
     module State =
 
         let findUnit name state =
             state.Units
                 |> Map.tryFind name
                 |> Option.defaultWith (fun () ->
-                    failwithf "Undefined unit: %s" name)
+                    state.Prefixes
+                        |> Map.toSeq
+                        |> Seq.tryPick (fun (prefix, scale) ->
+                            if name.StartsWith(prefix) then
+                                let name' =
+                                    name.Substring(prefix.Length)
+                                state.Units
+                                    |> Map.tryFind name'
+                                    |> Option.map (fun unit ->
+                                        scale @@ unit)
+                            else None)
+                        |> Option.defaultWith (fun () ->
+                            failwithf "Undefined unit: %s" name))
 
         let findPrefix name state =
             state.Prefixes
@@ -87,9 +98,9 @@ module private Parser =
     let parseRational =
         parseExponential <|> parseBigRational   // must try exponential first
 
-    let addPrefix state (name, value) =
+    let addPrefix state (name, scale) =
         { state with
-            Prefixes = state.Prefixes |> Map.add name value }
+            Prefixes = state.Prefixes |> Map.add name scale }
 
     let parseBasePrefix =
         parse {
@@ -97,8 +108,8 @@ module private Parser =
             do! spaces
             do! skipString "::-"
             do! spaces
-            let! value = parseRational
-            return name, value
+            let! scale = parseRational
+            return name, scale
         } |> attempt
 
     let parseDerivedPrefix state =
@@ -107,16 +118,16 @@ module private Parser =
             do! spaces
             do! skipString ":-"
             do! spaces
-            let! valueOpt = opt parseRational
-            let! value =
-                match valueOpt with
+            let! scaleOpt = opt parseRational
+            let! scale =
+                match scaleOpt with
                     | Some value ->
                         preturn value
                     | None ->
                         identifier
                             |>> (fun oldName ->
                                 state |> State.findPrefix oldName)
-            return newName, value
+            return newName, scale
         } |> attempt
 
     let parsePrefix state =
