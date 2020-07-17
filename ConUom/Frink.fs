@@ -125,9 +125,28 @@ module private Parser =
             return unit ^ power
         } |> attempt
 
-    let parseCombination state =
-        many (parseUnitPower state .>> spaces)
+    let parseProduct state =
+        many1 (parseUnitPower state .>> spaces)
             |>> (List.fold (*) Unit.one)
+
+    let parseCombination state =
+        parse {
+            let! num = parseProduct state
+            do! spaces
+            let! divOpt =
+                let skipSlash = skipChar '/'
+                let skipDiv =   // distinguish comment from division
+                    skipSlash
+                        .>> notFollowedBy skipSlash
+                        |> attempt
+                opt skipDiv
+            do! spaces
+            let! den =
+                if divOpt.IsSome then
+                    parseProduct state
+                else preturn Unit.one
+            return num / den
+        }
 
     /// E.g. kilogram := kg
     /// E.g. gram := 1/1000 kg
