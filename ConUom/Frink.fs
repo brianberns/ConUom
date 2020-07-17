@@ -75,7 +75,8 @@ module private Parser =
         ] |> many
 
     let parseBigInt =
-        many1Satisfy Char.IsDigit
+        many1Satisfy (fun c -> isDigit c || c = '_')
+            |>> (fun str -> str.Replace("_", ""))
             |>> bigint.Parse
 
     let parseBigRational =
