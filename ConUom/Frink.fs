@@ -33,6 +33,9 @@ module private Parser =
             reply
 #endif
 
+    let spaces =
+        skipMany (skipAnyOf " \t")   // don't allow newline
+
     let skipComment =
         choice [
             (skipString "//" .>> skipRestOfLine false)
@@ -108,6 +111,24 @@ module private Parser =
     let parseRational =
         parseExponential <|> parseBigRational   // must try exponential first
 
+    let parseUnitPower state =
+        parse {
+            let! name = identifier
+            let! caretOpt = opt (skipChar '^')
+            let! power =
+                if caretOpt.IsSome then pint32
+                else preturn 1
+
+            let unit =
+                if name = "1" then Unit.one
+                else state |> State.findUnit name
+            return unit ^ power
+        } |> attempt
+
+    let parseCombination state =
+        many (parseUnitPower state .>> spaces)
+            |>> (List.fold (*) Unit.one)
+
     /// E.g. kilogram := kg
     /// E.g. gram := 1/1000 kg
     /// E.g. radian := 1
@@ -118,14 +139,12 @@ module private Parser =
             do! skipString ":="
             do! spaces
             let! scaleOpt = opt parseRational
-            do! skipMany (skipAnyOf " \t")   // don't allow newline
-            let! oldNameOpt = opt identifier
+            do! spaces
+            let! oldUnitOpt = opt (parseCombination state)
 
             let scale = scaleOpt |> Option.defaultValue 1N
             let oldUnit =
-                oldNameOpt
-                    |> Option.map (fun oldName ->
-                        state |> State.findUnit oldName)
+                oldUnitOpt
                     |> Option.defaultValue Unit.one
             let newUnit = scale @@ oldUnit
             return newName, newUnit
@@ -137,24 +156,6 @@ module private Parser =
             let! name, unit = parseDerivedUnit state
             do! addUnit name unit
         }
-
-    let parseUnitPower state =
-        parse {
-            let! name = identifier
-            let! caretOpt = opt (skipChar '^')
-            let! power =
-                if caretOpt.IsSome then pint32
-                else preturn 1
-
-            let oldUnit =
-                if name = "1" then Unit.one
-                else state.Units.[name]
-            return oldUnit ^ power
-        } |> attempt
-
-    let parseCombination state =
-        many (parseUnitPower state .>> spaces)
-            |>> (List.fold (*) Unit.one)
 
     let parseCombinationUnit state =
         parse {
