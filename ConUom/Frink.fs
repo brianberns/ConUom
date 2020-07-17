@@ -9,6 +9,12 @@ open FParsec
 
 module private Parser =
 
+    type State =
+        {
+            Prefixes : Map<string, BigRational>
+            Units : Map<string, Unit>
+        }
+
 #if DEBUG
     let (<!>) (p: Parser<_,_>) label : Parser<_,_> =
         fun stream ->
@@ -49,16 +55,19 @@ module private Parser =
         ] |> many
 
     let addUnit (name : string) (unit : Unit) =
-        updateUserState (Map.add name unit)
+        updateUserState (fun state ->
+            { state with
+                Units = state.Units |> Map.add name unit })
 
     let parseBaseUnit =
-        pipe3
-            identifier
-            (spaces >>. (skipString "=!=") .>> spaces)
-            identifier
-            (fun dim _ name ->
-                name, Unit.createBase dim name)
-            |> attempt
+        parse {
+            let! dim = identifier
+            do! spaces
+            do! skipString "=!="
+            do! spaces
+            let! name = identifier
+            return name, Unit.createBase dim name
+        } |> attempt
 
     let consumeBaseUnit =
         parse {
@@ -74,30 +83,31 @@ module private Parser =
         parse {
             let! num = parseBigInt
             let! slashOpt = opt (skipChar '/')
-            if slashOpt.IsSome then
-                let! den = parseBigInt
-                return BigRational.FromBigIntFraction(num, den)
-            else
-                return BigRational.FromBigInt(num)
+            let! den =
+                if slashOpt.IsSome then parseBigInt
+                else preturn 1I
+            return BigRational.FromBigIntFraction(num, den)
         }
 
     let parseDerivedUnit state =
-        pipe5
-            identifier
-            (spaces >>. (skipString ":=") .>> spaces)
-            (opt parseBigRational)
-            spaces
-            (opt identifier)
-            (fun newName _ scaleOpt _ oldNameOpt ->
-                let scale = scaleOpt |> Option.defaultValue 1N
-                let oldUnit =
-                    oldNameOpt
-                        |> Option.map (fun oldName ->
-                            state |> Map.find oldName)
-                        |> Option.defaultValue Unit.one
-                let newUnit = scale @@ oldUnit
-                newName, newUnit)
-            |> attempt
+        parse {
+            let! newName = identifier
+            do! spaces
+            do! skipString ":="
+            do! spaces
+            let! scaleOpt = opt parseBigRational
+            do! spaces
+            let! oldNameOpt = opt identifier
+
+            let scale = scaleOpt |> Option.defaultValue 1N
+            let oldUnit =
+                oldNameOpt
+                    |> Option.map (fun oldName ->
+                        state.Units |> Map.find oldName)
+                    |> Option.defaultValue Unit.one
+            let newUnit = scale @@ oldUnit
+            return newName, newUnit
+        } |> attempt
 
     let consumeDerivedUnit =
         parse {
@@ -106,8 +116,52 @@ module private Parser =
             do! addUnit name unit
         }
 
+    let parseUnitPower state =
+        parse {
+            let! name = identifier
+            let! caretOpt = opt (skipChar '^')
+            let! power =
+                if caretOpt.IsSome then pint32
+                else preturn 1
+
+            let oldUnit =
+                if name = "1" then Unit.one
+                else state.Units.[name]
+            return oldUnit ^ power
+        } |> attempt
+
+    let parseCombination state =
+        parseUnitPower state
+        (*
+        sepBy1
+            ((parseUnitPower state) <!> "parseUnitPower")
+            (spaces <!> "spaces")
+            |>> (List.fold (*) Unit.one)
+        *)
+
+    let parseCombinationUnit state =
+        parse {
+            let! unit = parseCombination state
+            do! spaces
+            do! skipString "|||"
+            do! spaces
+            let! name = identifier
+            return name, unit
+        } |> attempt
+
+    let consumeCombinationUnit =
+        parse {
+            let! state = getUserState
+            let! name, unit = parseCombinationUnit state
+            do! addUnit name unit
+        }
+
     let consumeUnit =
-        consumeBaseUnit <|> consumeDerivedUnit
+        choice [
+            consumeBaseUnit
+            consumeDerivedUnit
+            consumeCombinationUnit
+        ]
 
     let parseUnits =
         optional skipJunk
@@ -117,9 +171,13 @@ module private Parser =
     let parse str =
         let parser = parseUnits .>> eof   // force consumption of entire string
         let str = if isNull str then "" else str
-        let state = Map [ "<<IMAGINARY_UNIT>>", Unit.one ]
+        let state =
+            {
+                Prefixes = Map.empty
+                Units = Map [ "<<IMAGINARY_UNIT>>", Unit.one ]
+            }
         match runParserOnString parser state "" str with
-            | Success (_, result, _) -> result
+            | Success (_, result, _) -> result.Units 
             | Failure (msg, _, _) -> failwith msg
 
 module Frink =
