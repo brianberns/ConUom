@@ -157,10 +157,6 @@ module private FrinkParser =
             return! setUserState <| consumer state value
         }
 
-    /// Consumes a value produced by the given stateless parser.
-    let consumeStateless parser consumer =
-        consume (fun _ -> parser) consumer
-
     module Prefix =
 
         /// Adds the given prefix to the given state.
@@ -361,8 +357,8 @@ module private FrinkParser =
                     ]
             }
         match runParserOnString parser state "" str with
-            | Success (_, result, _) -> result.Units 
-            | Failure (msg, _, _) -> failwith msg
+            | Success (_, state', _) -> Result.Ok state'.Units
+            | Failure (msg, _, _) -> Result.Error msg
 
 module Frink =
 
