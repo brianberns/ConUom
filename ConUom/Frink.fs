@@ -19,11 +19,11 @@ type private State =
 
 module private State =
 
-    /// Finds the unit with the given name.
-    let findUnit name state =
+    /// Tries to find the unit with the given name.
+    let tryFindUnit name state =
         state.Units
             |> Map.tryFind name
-            |> Option.defaultWith (fun () ->
+            |> Option.orElseWith (fun () ->
 
                     // try prefixes if name not found
                 state.Prefixes
@@ -36,16 +36,12 @@ module private State =
                                 |> Map.tryFind name'
                                 |> Option.map (fun unit ->
                                     scale @@ unit)
-                        else None)
-                    |> Option.defaultWith (fun () ->
-                        failwithf "Undefined unit: %s" name))
+                        else None))
 
-    /// Finds the prefixe with the given name.
-    let findPrefix name state =
+    /// Tries to find the prefix with the given name.
+    let tryFindPrefix name state =
         state.Prefixes
             |> Map.tryFind name
-            |> Option.defaultWith (fun () ->
-                failwithf "Undefined prefix: %s" name)
 
 #if DEBUG
 [<AutoOpen>]
@@ -120,6 +116,9 @@ module private FrinkParser =
     let spaces =
         skipMany (skipAnyOf " \t")   // don't allow newline
 
+    /// Fails with a formatted string.
+    let failf fmt = Printf.ksprintf fail fmt
+
     /// Skips a comment.
     let skipComment =
         choice [
@@ -180,6 +179,17 @@ module private FrinkParser =
                 return name, scale
             } |> attempt
 
+        /// Parses a prefix reference.
+        let parseRef state =
+            parse {
+                let! name = identifier
+                let scaleOpt = state |> State.tryFindPrefix name
+                return!
+                    match scaleOpt with
+                        | Some scale -> preturn scale
+                        | None -> failf "Unknown prefix: %s" name
+            } |> attempt
+
         /// Parses the declaration of a derived prefix. E.g. "m :- milli".
         let parseDerivedDecl state =
             parse {
@@ -190,12 +200,8 @@ module private FrinkParser =
                 let! scaleOpt = opt BigRational.parse
                 let! scale =
                     match scaleOpt with
-                        | Some value ->
-                            preturn value
-                        | None ->
-                            identifier
-                                |>> (fun oldName ->
-                                    state |> State.findPrefix oldName)
+                        | Some value -> preturn value
+                        | None -> parseRef state
                 return newName, scale
             } |> attempt
 
@@ -228,18 +234,25 @@ module private FrinkParser =
                 return name, Unit.createBase dim name
             } |> attempt
 
+        /// Parses a unit reference.
+        let parseRef state =
+            parse {
+                let! name = identifier
+                let unitOpt = state |> State.tryFindUnit name
+                return!
+                    match unitOpt with
+                        | Some unit -> preturn unit
+                        | None -> failf "Unknown unit: %s" name
+            } |> attempt
+
         /// Parses a unit followed optionally by a power. E.g. "m^2".
         let parseUnitPower state =
             parse {
-                let! name = identifier
+                let! unit = parseRef state
                 let! caretOpt = opt (skipChar '^')
                 let! power =
                     if caretOpt.IsSome then pint32
                     else preturn 1
-
-                let unit =
-                    if name = "1" then Unit.one
-                    else state |> State.findUnit name
                 return unit ^ power
             } |> attempt
 
@@ -341,7 +354,11 @@ module private FrinkParser =
         let state =
             {
                 Prefixes = Map.empty
-                Units = Map [ "<<IMAGINARY_UNIT>>", Unit.one ]   // ick
+                Units =
+                    Map [
+                        "1", Unit.one
+                        "<<IMAGINARY_UNIT>>", Unit.one   // ick
+                    ]
             }
         match runParserOnString parser state "" str with
             | Success (_, result, _) -> result.Units 
