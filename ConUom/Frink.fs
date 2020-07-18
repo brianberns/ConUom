@@ -55,8 +55,10 @@ module private Parser =
 
     let skipComment =
         choice [
-            (skipString "//" .>> skipRestOfLine false)
-            (skipString "/*" >>. skipCharsTillString "*/" true Int32.MaxValue)
+            (skipString "//"
+                .>> skipRestOfLine false)
+            (skipString "/*"
+                >>. skipCharsTillString "*/" true Int32.MaxValue)
         ]
 
     let identifier =
@@ -74,8 +76,24 @@ module private Parser =
             skipComment
         ] |> many
 
+    let parseExponential =
+        parse {
+            do! skipString "1ee"
+            let! exp = pint32
+            return 1N ** exp
+        }
+
+    let parseDecimal =
+        parse {
+            let! whole = many1Satisfy isDigit
+            do! skipChar '.'
+            let! fraction = many1Satisfy isDigit
+            return Decimal.Parse <| sprintf "%s.%s" whole fraction
+        } |> attempt
+
     let parseBigInt =
-        many1Satisfy Char.IsDigit
+        many1Satisfy (fun c -> isDigit c || c = '_')
+            |>> (fun str -> str.Replace("_", ""))
             |>> bigint.Parse
 
     let parseBigRational =
@@ -88,15 +106,12 @@ module private Parser =
             return BigRational.FromBigIntFraction(num, den)
         }
 
-    let parseExponential =
-        parse {
-            do! skipString "1ee"
-            let! exp = pint32
-            return 1N ** exp
-        }
-
     let parseRational =
-        parseExponential <|> parseBigRational   // must try exponential first
+        choice [
+            parseExponential
+            parseDecimal |>> BigRational.FromDecimal
+            parseBigRational   // must be last
+        ]
 
     let addPrefix state (name, scale) =
         { state with
