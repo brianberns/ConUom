@@ -58,19 +58,27 @@ module private Debug =
 
 module private Decimal =
 
-    /// Parses a decimal number.
+    /// Parses a positive decimal number. E.g. "1.23e-4"
     let parse =
         parse {
             let! whole = many1Satisfy isDigit
             do! skipChar '.'
             let! fraction = many1Satisfy isDigit
-            return sprintf "%s.%s" whole fraction
-                |> Decimal.Parse
+            let n =
+                sprintf "%s.%s" whole fraction
+                    |> Decimal.Parse
+
+            let! eOpt = opt (skipChar 'e')
+            if eOpt.IsSome then
+                let! exp = pint32
+                return decimal <| (float n) * (10.0 ** (float exp))   // find a better way?
+            else
+                return n
         } |> attempt
 
 module private BigInt =
 
-    /// Parses a big integer, ignoring underscores.
+    /// Parses a positive big integer, ignoring underscores.
     let parse =
         many1Satisfy (fun c -> isDigit c || c = '_')
             |>> (fun str -> str.Replace("_", ""))
@@ -78,7 +86,7 @@ module private BigInt =
 
 module private BigRational =
 
-    /// Parses an exact exponential as a rational. E.g. "1ee12".
+    /// Parses a positive exact exponential as a rational. E.g. "1ee12".
     let parseExactExponential =
         parse {
             do! skipString "1ee"
@@ -357,7 +365,7 @@ module private FrinkParser =
                     ]
             }
         match runParserOnString parser state "" str with
-            | Success (_, state', _) -> Result.Ok state'.Units
+            | Success ((), state', _) -> Result.Ok state'.Units
             | Failure (msg, _, _) -> Result.Error msg
 
 module Frink =
