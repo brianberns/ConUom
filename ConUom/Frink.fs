@@ -160,8 +160,8 @@ module private FrinkParser =
     /// Consumes a value produced by the given parser.
     let consume parser consumer =
         parse {
+            let! value = parser
             let! state = getUserState
-            let! value = parser state
             return! setUserState <| consumer state value
         }
 
@@ -184,9 +184,10 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses a prefix reference.
-        let parseRef state =
+        let parseRef =
             parse {
                 let! name = identifier
+                let! state = getUserState
                 let scaleOpt = state |> State.tryFindPrefix name
                 return!
                     match scaleOpt with
@@ -195,7 +196,7 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses the declaration of a derived prefix. E.g. "m :- milli".
-        let parseDerivedDecl state =
+        let parseDerivedDecl =
             parse {
                 let! newName = identifier
                 do! spaces
@@ -205,15 +206,15 @@ module private FrinkParser =
                 let! scale =
                     match scaleOpt with
                         | Some value -> preturn value
-                        | None -> parseRef state
+                        | None -> parseRef
                 return newName, scale
             } |> attempt
 
         /// Parses a prefix declaration.
-        let parseDecl state =
+        let parseDecl =
             choice [
                 parseBaseDecl
-                parseDerivedDecl state
+                parseDerivedDecl
             ]
 
         /// Consumes a prefix declaration.
@@ -239,9 +240,10 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses a unit reference.
-        let parseRef state =
+        let parseRef =
             parse {
                 let! name = identifier
+                let! state = getUserState
                 let unitOpt = state |> State.tryFindUnit name
                 return!
                     match unitOpt with
@@ -250,9 +252,9 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses a unit followed optionally by a power. E.g. "m^2".
-        let parseUnitPower state =
+        let parseUnitPower =
             parse {
-                let! unit = parseRef state
+                let! unit = parseRef
                 let! caretOpt = opt (skipChar '^')
                 let! power =
                     if caretOpt.IsSome then pint32
@@ -261,16 +263,16 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses the product of one or more unit-powers. E.g. "m s^-1".
-        let parseProduct state =
-            many1 (parseUnitPower state .>> spaces)   // note: consumes trailing spaces
+        let parseProduct =
+            many1 (parseUnitPower .>> spaces)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
 
         /// Parses a combination of units. E.g. "kg m / s^2".
-        let parseCombination state =
+        let parseCombination =
             parse {
 
                     // numerator
-                let! num = parseProduct state
+                let! num = parseProduct
 
                     // optional division
                 do! spaces
@@ -286,7 +288,7 @@ module private FrinkParser =
                     // denominator
                 let! den =
                     if divOpt.IsSome then
-                        parseProduct state
+                        parseProduct
                     else preturn Unit.one
 
                 return num / den
@@ -296,7 +298,7 @@ module private FrinkParser =
         /// E.g. "kilogram := kg"
         /// E.g. "gram := 1/1000 kg"
         /// E.g. "radian := 1"
-        let parseDerivedDecl state =
+        let parseDerivedDecl =
             parse {
                 let! newName = identifier
                 do! spaces
@@ -304,7 +306,7 @@ module private FrinkParser =
                 do! spaces
                 let! scaleOpt = opt BigRational.parse
                 do! spaces
-                let! oldUnitOpt = opt (parseCombination state)
+                let! oldUnitOpt = opt parseCombination
 
                 let scale = scaleOpt |> Option.defaultValue 1N
                 let oldUnit =
@@ -316,9 +318,9 @@ module private FrinkParser =
 
         /// Parses the declaration of a combination unit.
         /// E.g. "m^2 K / W ||| thermal_insulance".
-        let parseCombinationDecl state =
+        let parseCombinationDecl =
             parse {
-                let! unit = parseCombination state
+                let! unit = parseCombination
                 do! spaces
                 do! skipString "|||"
                 do! spaces
@@ -327,11 +329,11 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses a unit declaration.
-        let parseDecl state =
+        let parseDecl =
             choice [
                 parseBaseDecl
-                parseDerivedDecl state
-                parseCombinationDecl state
+                parseDerivedDecl
+                parseCombinationDecl
             ]
 
         /// Consumes a unit declaration.
