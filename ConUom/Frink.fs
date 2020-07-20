@@ -58,7 +58,7 @@ module private Debug =
 
 module private Decimal =
 
-    /// Parses a positive decimal number. E.g. "1.23e-4"
+    /// Parses a positive decimal number. E.g. "1", "1.23", "1.23e-4"
     let parse =
         parse {
             let! whole = many1Satisfy isDigit
