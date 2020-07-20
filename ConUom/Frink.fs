@@ -147,10 +147,14 @@ module private FrinkParser =
     /// Parses an identifier.
     let identifier =
         let isAsciiIdStart c =
-            isAsciiLetter c || c = '\\'
+            isLetter c || c = '\\'
+        let isAsciiIdContinue c =
+            isAsciiIdStart c || isDigit c || c = '_'
         choice [
-            identifier <| IdentifierOptions(isAsciiIdStart)
-            pstring "1"
+            IdentifierOptions(
+                isAsciiIdStart,
+                isAsciiIdContinue)
+                |> identifier
             pstring "<<IMAGINARY_UNIT>>"
         ]
 
