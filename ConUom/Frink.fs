@@ -267,19 +267,23 @@ module private FrinkParser =
             ]
 
         /// Parses an explicit power.
-        let parsePower =
+        let parsePowerExplicit =
             parse {
                 do! skipChar '^'
                 do! spaces
                 return! pint32 // BigRational.parse
             } |> attempt
 
+        /// Parses an explicit or implicit power.
+        let parsePower =
+            parsePowerExplicit <|>% 1
+
         /// Parses a term followed optionally by a power. E.g. "m^2".
         let parseTermPower =
             parse {
                 let! unit = parseTerm
                 do! spaces
-                let! power = parsePower <|>% 1
+                let! power = parsePower
                 return unit ^ power
             } |> attempt
 
@@ -326,7 +330,7 @@ module private FrinkParser =
 
         let parseExprProduct =
             many1 parseExpr
-                |>> List.fold Unit.mult Unit.one
+                |>> List.fold (*) Unit.one
 
         /// Parses the declaration of a derived unit.
         /// E.g. "kilogram := kg"
