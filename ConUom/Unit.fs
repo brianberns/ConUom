@@ -98,6 +98,8 @@ module Unit =
 
     /// Inverts a unit. E.g. ft^2 -> ft^-2.
     let invert unit =
+        if unit.Scale = 0N then
+            failwithf "Can't invert unit: %A" unit
         {
             BaseMap =
                 unit

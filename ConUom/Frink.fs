@@ -153,26 +153,6 @@ module private FrinkParser =
     /// Fails with a formatted string.
     let failf fmt = Printf.ksprintf fail fmt
 
-    /// Skips a comment.
-    let skipComment =
-        choice [
-
-                // a comment like this
-            (skipString "//"
-                .>> skipRestOfLine false)
-
-                // /* a comment like this */
-            (skipString "/*"
-                >>. skipCharsTillString "*/" true Int32.MaxValue)
-        ]
-
-    /// Skips irrelevant text.
-    let skipJunk =
-        choice [
-            spaces1   // whitespace, including newlines
-            skipComment
-        ] |> many
-
     /// Parses an identifier.
     let identifier =
         let isAsciiIdStart c =
@@ -186,6 +166,41 @@ module private FrinkParser =
                 |> identifier
             pstring "<<IMAGINARY_UNIT>>"   // ick
         ]
+
+    /// Skips until the given string.
+    let skipTill str =
+        skipCharsTillString str true Int32.MaxValue
+
+    /// Skips a comment.
+    let skipComment =
+        choice [
+            skipString "//" .>> skipRestOfLine false   // a comment like this
+            skipString "/*" >>. skipTill "*/"          // /* a comment like this */
+        ]
+
+    let skipFunction =
+
+        let skipBody =
+            parse {
+                do! skipString "{"
+                do! skipTill "}"
+            }
+
+        parse {
+            do! identifier |>> ignore
+            do! skipString "["
+            do! skipTill ":="
+            do! skipRestOfLine true
+            do! optional skipBody
+        } |> attempt
+
+    /// Skips irrelevant text.
+    let skipJunk =
+        choice [
+            spaces1   // whitespace, including newlines
+            skipComment
+            skipFunction
+        ] |> many
 
     /// Consumes a value produced by the given parser.
     let consume parser consumer =
@@ -347,14 +362,25 @@ module private FrinkParser =
 
         /// Parses a quotient. E.g. "dyne cm  / (abamp sec)".
         let parseQuotient =
+
+            let parsePair =
+                parse {
+                    let! num = parseTermPowerProduct <|> parseUnified
+                    do! spaces
+                    do! skipChar '/'
+                    do! spaces
+                    let! den = parseUnified
+                    return num, den
+                } |> attempt
+
             parse {
-                let! num = parseTermPowerProduct <|> parseUnified
-                do! spaces
-                do! skipChar '/'
-                do! spaces
-                let! den = parseUnified
-                return num/den
-            } |> attempt
+                let! num, den = parsePair
+                return!   // no Combine method on computation builder
+                    if den.Scale = 0N then
+                        failf "Denominator is zero: (%A)/(%A)" num den
+                    else
+                        preturn (num/den)
+            }
 
         /// Parses an expression.
         let parseExpr =
