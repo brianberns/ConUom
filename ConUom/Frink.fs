@@ -58,23 +58,27 @@ module private Debug =
 
 module private Decimal =
 
-    /// Parses a positive decimal number. E.g. "1.23", "1.23e-4".
-    let parse =
+    /// Parses a simple positive decimal number. E.g. "1.23".
+    let parseSimple =
         parse {
             let! whole = many1Satisfy isDigit
             do! skipChar '.'
             let! fraction = many1Satisfy isDigit
-            let n =
-                sprintf "%s.%s" whole fraction
-                    |> Decimal.Parse
+            return sprintf "%s.%s" whole fraction
+                |> Decimal.Parse
+        } |> attempt
 
+    /// Parses a positive decimal number. E.g. "1.23", "1.23e-4".
+    let parse =
+        parse {
+            let! n = parseSimple
             let! eOpt = opt (skipChar 'e')
             if eOpt.IsSome then
                 let! exp = pint32
                 return decimal <| (float n) * (10.0 ** (float exp))   // find a better way?
             else
                 return n
-        } |> attempt
+        }
 
 module private BigInt =
 
@@ -86,13 +90,21 @@ module private BigInt =
 
 module private BigRational =
 
-    /// Parses a positive exact exponential as a rational. E.g. "1ee12".
+    /// Parses a positive exact exponential as a rational. E.g. "1.23ee45".
     let parseExactExponential =
+
+        let parseBase =
+            choice [
+                Decimal.parseSimple |>> BigRational.FromDecimal
+                BigInt.parse |>> BigRational.FromBigInt
+            ]
+
         parse {
-            do! skipString "1ee"
+            let! n = parseBase
+            do! skipString "ee"
             let! exp = pint32
-            return 1N ** exp
-        }
+            return n ** exp
+        } |> attempt
 
     /// Parses a decimal as a rational.
     let parseDecimal =
