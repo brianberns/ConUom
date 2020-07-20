@@ -31,7 +31,10 @@ type Unit =
                             if power = 1 then name
                             else sprintf "%s^%d" name power)
                 String.Join(" ", names)
-            sprintf "%A @@ %s" this.Scale units
+            if this.Scale = 1N then
+                units
+            else
+                sprintf "%A @@ %s" this.Scale units
 
 module Unit =
 

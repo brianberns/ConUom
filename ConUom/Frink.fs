@@ -58,7 +58,7 @@ module private Debug =
 
 module private Decimal =
 
-    /// Parses a positive decimal number. E.g. "1", "1.23", "1.23e-4"
+    /// Parses a positive decimal number. E.g. "1.23", "1.23e-4".
     let parse =
         parse {
             let! whole = many1Satisfy isDigit
@@ -101,12 +101,16 @@ module private BigRational =
 
     /// Parses a fraction (or whole number) as a rational.
     let parseFraction =
+
+        let parseDen =
+            parse {
+                do! skipChar '/'
+                return! BigInt.parse
+            } |> attempt
+
         parse {
             let! num = BigInt.parse
-            let! slashOpt = opt (skipChar '/')
-            let! den =
-                if slashOpt.IsSome then BigInt.parse
-                else preturn 1I
+            let! den = parseDen <|>% 1I
             return BigRational.FromBigIntFraction(num, den)
         }
 
@@ -258,18 +262,16 @@ module private FrinkParser =
 
         let parseTerm =
             choice [
-                parseRef
                 parseDimensionless
+                parseRef
             ]
 
-        /// Parses an explicit or implicit power.
+        /// Parses an explicit power.
         let parsePower =
             parse {
-                let! caretOpt = opt (skipChar '^')
+                do! skipChar '^'
                 do! spaces
-                return!
-                    if caretOpt.IsSome then pint32 // BigRational.parse
-                    else preturn 1
+                return! pint32 // BigRational.parse
             } |> attempt
 
         /// Parses a term followed optionally by a power. E.g. "m^2".
@@ -277,7 +279,7 @@ module private FrinkParser =
             parse {
                 let! unit = parseTerm
                 do! spaces
-                let! power = parsePower
+                let! power = parsePower <|>% 1
                 return unit ^ power
             } |> attempt
 
@@ -309,7 +311,7 @@ module private FrinkParser =
             parse {
                 let! num = parseProduct <|> parseUnified
                 do! spaces
-                do! (skipChar '/') .>> notFollowedBy (skipChar '/')   // distinguish comment from division
+                do! skipChar '/'
                 do! spaces
                 let! den = parseUnified
                 return num/den
@@ -322,26 +324,22 @@ module private FrinkParser =
                 parseUnified
             ]
 
+        let parseExprProduct =
+            many1 parseExpr
+                |>> List.fold Unit.mult Unit.one
+
         /// Parses the declaration of a derived unit.
         /// E.g. "kilogram := kg"
         /// E.g. "gram := 1/1000 kg"
         /// E.g. "radian := 1"
         let parseDerivedDecl =
             parse {
-                let! newName = identifier
+                let! name = identifier
                 do! spaces
                 do! skipString ":="
                 do! spaces
-                let! scaleOpt = opt BigRational.parse
-                do! spaces
-                let! oldUnitOpt = opt parseExpr
-
-                let scale = scaleOpt |> Option.defaultValue 1N
-                let oldUnit =
-                    oldUnitOpt
-                        |> Option.defaultValue Unit.one
-                let newUnit = scale @@ oldUnit
-                return newName, newUnit
+                let! unit = parseExprProduct
+                return name, unit
             } |> attempt
 
         /// Parses the declaration of a combination unit.
@@ -389,7 +387,6 @@ module private FrinkParser =
                 Prefixes = Map.empty
                 Units =
                     Map [
-                        "1", Unit.one
                         "<<IMAGINARY_UNIT>>", Unit.one   // ick
                     ]
             }
