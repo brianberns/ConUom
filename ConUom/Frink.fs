@@ -113,7 +113,7 @@ module private BigRational =
             let! n = parseBase
             do! skipString "ee"
             let! exp = pint32
-            return n ** exp
+            return n * (10N ** exp)
         } |> attempt
 
     /// Parses a decimal as a rational.
@@ -319,7 +319,7 @@ module private FrinkParser =
             } |> attempt
 
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
-        let parseProduct =
+        let parseTermPowerProduct =
             many1 (parseTermPower .>> spaces)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
 
@@ -329,7 +329,7 @@ module private FrinkParser =
             parse {
                 do! skipChar '('
                 do! spaces
-                let! unit = parseProduct
+                let! unit = parseTermPowerProduct
                 do! spaces
                 do! skipChar ')'
                 do! spaces
@@ -348,7 +348,7 @@ module private FrinkParser =
         /// Parses a quotient. E.g. "dyne cm  / (abamp sec)".
         let parseQuotient =
             parse {
-                let! num = parseProduct <|> parseUnified
+                let! num = parseTermPowerProduct <|> parseUnified
                 do! spaces
                 do! skipChar '/'
                 do! spaces
@@ -360,7 +360,7 @@ module private FrinkParser =
         let parseExpr =
             choice [
                 parseQuotient
-                parseProduct
+                parseTermPowerProduct
                 parseUnified
             ]
 
