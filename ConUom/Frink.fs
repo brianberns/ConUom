@@ -273,8 +273,11 @@ module private FrinkParser =
 
         /// Parses a dimensionless unit.
         let parseDimensionless =
-            BigRational.parse
-                |>> Unit.createScale
+            choice [
+                skipChar '+' >>% Unit.one
+                skipChar '-' >>% (-1 @@ Unit.one)
+                BigRational.parse |>> Unit.createScale
+            ]
 
         let parseTerm =
             choice [
