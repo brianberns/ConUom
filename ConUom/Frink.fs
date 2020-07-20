@@ -251,48 +251,76 @@ module private FrinkParser =
                         | None -> failf "Unknown unit: %s" name
             } |> attempt
 
-        /// Parses a unit followed optionally by a power. E.g. "m^2".
-        let parseUnitPower =
+        /// Parses a dimensionless unit.
+        let parseDimensionless =
+            BigRational.parse
+                |>> Unit.createScale
+
+        let parseTerm =
+            choice [
+                parseRef
+                parseDimensionless
+            ]
+
+        /// Parses an explicit or implicit power.
+        let parsePower =
             parse {
-                let! unit = parseRef
                 let! caretOpt = opt (skipChar '^')
-                let! power =
-                    if caretOpt.IsSome then pint32
+                do! spaces
+                return!
+                    if caretOpt.IsSome then pint32 // BigRational.parse
                     else preturn 1
+            } |> attempt
+
+        /// Parses a term followed optionally by a power. E.g. "m^2".
+        let parseTermPower =
+            parse {
+                let! unit = parseTerm
+                do! spaces
+                let! power = parsePower
                 return unit ^ power
             } |> attempt
 
-        /// Parses the product of one or more unit-powers. E.g. "m s^-1".
+        /// Parses the product of one or more term-powers. E.g. "m s^-1".
         let parseProduct =
-            many1 (parseUnitPower .>> spaces)   // note: consumes trailing spaces
+            many1 (parseTermPower .>> spaces)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
 
-        /// Parses a combination of units. E.g. "kg m / s^2".
-        let parseCombination =
+        /// Parses a unified product followed optionally by a power. E.g. "(hbar c / G)^(1/2)"
+        let parseUnifiedProduct =
             parse {
-
-                    // numerator
-                let! num = parseProduct
-
-                    // optional division
+                do! skipChar '('
                 do! spaces
-                let! divOpt =
-                    let skipSlash = skipChar '/'
-                    let skipDiv =   // distinguish comment from division
-                        skipSlash
-                            .>> notFollowedBy skipSlash
-                            |> attempt
-                    opt skipDiv
+                let! unit = parseProduct
                 do! spaces
-
-                    // denominator
-                let! den =
-                    if divOpt.IsSome then
-                        parseProduct
-                    else preturn Unit.one
-
-                return num / den
+                do! skipChar ')'
+                do! spaces
+                let! power = parsePower
+                return unit ^ power
             }
+
+        let parseUnified =
+            choice [
+                parseUnifiedProduct
+                parseTermPower
+            ]
+
+        let parseQuotient =
+            parse {
+                let! num = parseProduct <|> parseUnified
+                do! spaces
+                do! (skipChar '/') .>> notFollowedBy (skipChar '/')   // distinguish comment from division
+                do! spaces
+                let! den = parseUnified
+                return num/den
+            } |> attempt
+
+        let parseExpr =
+            choice [
+                parseQuotient
+                parseProduct
+                parseUnified
+            ]
 
         /// Parses the declaration of a derived unit.
         /// E.g. "kilogram := kg"
@@ -306,7 +334,7 @@ module private FrinkParser =
                 do! spaces
                 let! scaleOpt = opt BigRational.parse
                 do! spaces
-                let! oldUnitOpt = opt parseCombination
+                let! oldUnitOpt = opt parseExpr
 
                 let scale = scaleOpt |> Option.defaultValue 1N
                 let oldUnit =
@@ -320,7 +348,7 @@ module private FrinkParser =
         /// E.g. "m^2 K / W ||| thermal_insulance".
         let parseCombinationDecl =
             parse {
-                let! unit = parseCombination
+                let! unit = parseExpr
                 do! spaces
                 do! skipString "|||"
                 do! spaces
@@ -349,9 +377,8 @@ module private FrinkParser =
 
     /// Consumes multiple declarations.
     let consumeDecls =
-        optional skipJunk
-            >>. skipSepBy consumeDecl skipJunk
-            .>> optional skipJunk
+        skipJunk
+            >>. skipMany (consumeDecl .>> skipJunk)
 
     /// Parses the given Frink declarations.
     let parse str =
