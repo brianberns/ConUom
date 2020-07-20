@@ -21,22 +21,31 @@ module private State =
 
     /// Tries to find the unit with the given name.
     let tryFindUnit name state =
-        state.Units
-            |> Map.tryFind name
-            |> Option.orElseWith (fun () ->
 
-                    // try prefixes if name not found
-                state.Prefixes
-                    |> Map.toSeq
-                    |> Seq.tryPick (fun (prefix, scale) ->
-                        if name.StartsWith(prefix) then
-                            let name' =
-                                name.Substring(prefix.Length)
-                            state.Units
-                                |> Map.tryFind name'
-                                |> Option.map (fun unit ->
-                                    scale @@ unit)
-                        else None))
+        let tryName name =
+            state.Units
+                |> Map.tryFind name
+                |> Option.orElseWith (fun () ->
+
+                        // try prefixes if name not found
+                    state.Prefixes
+                        |> Map.toSeq
+                        |> Seq.tryPick (fun (prefix, scale) ->
+                            if name.StartsWith(prefix) then
+                                let name' =
+                                    name.Substring(prefix.Length)
+                                state.Units
+                                    |> Map.tryFind name'
+                                    |> Option.map (fun unit ->
+                                        scale @@ unit)
+                            else None))
+
+            // try singular and plural
+        tryName name
+            |> Option.orElseWith (fun () ->
+                if name.EndsWith('s') then
+                    tryName (name.Substring(0, name.Length-1))
+                else None)
 
     /// Tries to find the prefix with the given name.
     let tryFindPrefix name state =
