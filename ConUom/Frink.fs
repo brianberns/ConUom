@@ -69,7 +69,7 @@ module private Debug =
 module private Decimal =
 
     /// Parses a simple positive decimal number. E.g. "1.23".
-    let parseSimple =
+    let parse =
         parse {
             let! whole = many1Satisfy isDigit
             do! skipChar '.'
@@ -77,18 +77,6 @@ module private Decimal =
             return sprintf "%s.%s" whole fraction
                 |> Decimal.Parse
         } |> attempt
-
-    /// Parses a positive decimal number. E.g. "1.23", "1.23e-4".
-    let parse =
-        parse {
-            let! n = parseSimple
-            let! eOpt = opt (skipChar 'e')
-            if eOpt.IsSome then
-                let! exp = pint32
-                return decimal <| (float n) * (10.0 ** (float exp))   // find a better way?
-            else
-                return n
-        }
 
 module private BigInt =
 
@@ -105,7 +93,7 @@ module private BigRational =
 
         let parseBase =
             choice [
-                Decimal.parseSimple |>> BigRational.FromDecimal
+                Decimal.parse |>> BigRational.FromDecimal
                 BigInt.parse |>> BigRational.FromBigInt
             ]
 
@@ -116,10 +104,16 @@ module private BigRational =
             return n * (10N ** exp)
         } |> attempt
 
-    /// Parses a decimal as a rational.
+    /// Parses a positive decimal number as a rational. E.g. "1.23", "1.23e-4".
     let parseDecimal =
-        Decimal.parse
-            |>> BigRational.FromDecimal
+        parse {
+            let! n = Decimal.parse |>> BigRational.FromDecimal
+            let! eOpt = opt (skipChar 'e')
+            let! exp =
+                if eOpt.IsSome then pint32
+                else preturn 1
+            return n * (10N ** exp)
+        }
 
     /// Parses a fraction (or whole number) as a rational.
     let parseFraction =
