@@ -22,7 +22,7 @@ module private State =
     /// Tries to find the unit with the given name.
     let tryFindUnit name state =
 
-        let tryName name =
+        let tryFind name =
             state.Units
                 |> Map.tryFind name
                 |> Option.orElseWith (fun () ->
@@ -40,11 +40,12 @@ module private State =
                                         scale @@ unit)
                             else None))
 
-            // try singular and plural
-        tryName name
+        tryFind name
+
+                // try converting plural to singular
             |> Option.orElseWith (fun () ->
                 if name.EndsWith('s') then
-                    tryName (name.Substring(0, name.Length-1))
+                    tryFind (name.Substring(0, name.Length-1))
                 else None)
 
     /// Tries to find the prefix with the given name.
@@ -123,11 +124,11 @@ module private BigRational =
     /// Parses a fraction (or whole number) as a rational.
     let parseFraction =
 
+            // parse entire denominator or leave slash unparsed (e.g. "1/unit")
         let parseDen =
-            parse {
-                do! skipChar '/'
-                return! BigInt.parse
-            } |> attempt
+            skipChar '/'
+                >>. BigInt.parse
+                |> attempt
 
         parse {
             let! num = BigInt.parse
@@ -165,6 +166,13 @@ module private FrinkParser =
                 >>. skipCharsTillString "*/" true Int32.MaxValue)
         ]
 
+    /// Skips irrelevant text.
+    let skipJunk =
+        choice [
+            spaces1   // whitespace, including newlines
+            skipComment
+        ] |> many
+
     /// Parses an identifier.
     let identifier =
         let isAsciiIdStart c =
@@ -176,15 +184,8 @@ module private FrinkParser =
                 isAsciiIdStart,
                 isAsciiIdContinue)
                 |> identifier
-            pstring "<<IMAGINARY_UNIT>>"
+            pstring "<<IMAGINARY_UNIT>>"   // ick
         ]
-
-    /// Skips irrelevant text.
-    let skipJunk =
-        choice [
-            spaces1   // whitespace, including newlines
-            skipComment
-        ] |> many
 
     /// Consumes a value produced by the given parser.
     let consume parser consumer =
@@ -288,6 +289,7 @@ module private FrinkParser =
                 BigRational.parse |>> Unit.createScale
             ]
 
+        /// Parses a term in an expression.
         let parseTerm =
             choice [
                 parseDimensionless
@@ -306,7 +308,8 @@ module private FrinkParser =
         let parsePower =
             parsePowerExplicit <|>% 1
 
-        /// Parses a term followed optionally by a power. E.g. "m^2".
+        /// Parses a term followed by a (possibly implicit) power.
+        /// E.g. "m^2".
         let parseTermPower =
             parse {
                 let! unit = parseTerm
@@ -320,7 +323,8 @@ module private FrinkParser =
             many1 (parseTermPower .>> spaces)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
 
-        /// Parses a unified product followed optionally by a power. E.g. "(hbar c / G)^(1/2)"
+        /// Parses a unified product followed by a (possibly implicit)
+        /// power. E.g. "(hbar c / G)^(1/2)"
         let parseUnifiedProduct =
             parse {
                 do! skipChar '('
@@ -333,12 +337,15 @@ module private FrinkParser =
                 return unit ^ power
             }
 
+        /// Parses a unified expression - something that can be the denominator
+        /// of a quotient.
         let parseUnified =
             choice [
                 parseUnifiedProduct
                 parseTermPower
             ]
 
+        /// Parses a quotient. E.g. "dyne cm  / (abamp sec)".
         let parseQuotient =
             parse {
                 let! num = parseProduct <|> parseUnified
@@ -349,6 +356,7 @@ module private FrinkParser =
                 return num/den
             } |> attempt
 
+        /// Parses an expression.
         let parseExpr =
             choice [
                 parseQuotient
@@ -356,6 +364,7 @@ module private FrinkParser =
                 parseUnified
             ]
 
+        /// Parses the product of one or more expressions. E.g. "1/1000 kg".
         let parseExprProduct =
             many1 parseExpr
                 |>> List.fold (*) Unit.one
@@ -423,8 +432,8 @@ module private FrinkParser =
                     ]
             }
         match runParserOnString parser state "" str with
-            | Success ((), state', _) -> Result.Ok state'.Units
-            | Failure (msg, _, _) -> Result.Error msg
+            | Success ((), state', _) -> state'.Units, None
+            | Failure (msg, _, state') -> state'.Units, Some msg
 
 module Frink =
 

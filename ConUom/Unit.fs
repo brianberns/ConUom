@@ -19,8 +19,9 @@ type Unit =
 
     /// Name of this unit.
     member this.Name =
+        let scaleStr = sprintf "%A" <| float this.Scale
         if this.BaseMap.IsEmpty then
-            sprintf "%A" this.Scale
+            scaleStr
         else
             let units =
                 let names =
@@ -34,7 +35,7 @@ type Unit =
             if this.Scale = 1N then
                 units
             else
-                sprintf "%A @@ %s" this.Scale units
+                sprintf "%s %s" scaleStr units
 
 module Unit =
 

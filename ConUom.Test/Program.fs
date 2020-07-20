@@ -6,10 +6,8 @@ module Program =
 
     [<EntryPoint>] 
     let main _ =
-        match Frink.parseFile "units.txt" with
-            | Ok pairs ->
-                for (key, value) in pairs |> Map.toSeq do
-                    printfn "%s: %A" key value
-            | Error msg ->
-                printfn "%A" msg
+        let pairs, msgOpt = Frink.parseFile "units.txt"
+        for (key, value) in pairs |> Map.toSeq do
+            printfn "%s: %A" key value
+        msgOpt |> Option.iter (printfn ""; printfn "%A")
         0
