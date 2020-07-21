@@ -38,7 +38,7 @@ type TestClass () =
     let water = 1 @ g/cc
     let alcohol = 0.7893m @ g/cc
 
-    let float = Measurement.float
+    let mfloat = Measurement.float
 
     [<TestMethod>]
     member __.FromDecimal() =
@@ -97,10 +97,10 @@ type TestClass () =
             (1 @ cm^3) * water)
         Assert.AreEqual(
             59930.84215309883,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) * water => lb |> float)
+            (10 @ ft) * (12 @ ft) * (8 @ ft) * water => lb |> mfloat)
         Assert.AreEqual(
             0.5339487791320047,
-            (2 @ ton) / ((10 @ ft) * (12 @ ft) * water) => ft |> float)
+            (2 @ ton) / ((10 @ ft) * (12 @ ft) * water) => ft |> mfloat)
 
     [<TestMethod>]
     member __.Liquor() =
@@ -109,14 +109,32 @@ type TestClass () =
         let magnum = 1.5m @ liter
         Assert.AreEqual(
             14.074492562524341,
-            magnum * (13.5m @ percent) => !@beer |> float)
+            magnum * (13.5m @ percent) => !@beer |> mfloat)
 
         let proof = 1N/200N @@ one
         let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
         Assert.AreEqual(
             8.78372074090843481138500000,
-            junglejuice => percent |> float)
+            junglejuice => percent |> mfloat)
 
         Assert.AreEqual(
             10.83279809499848,
-            (5 @ one) * (12 @ floz) * junglejuice => !@beer |> float)
+            (5 @ one) * (12 @ floz) * junglejuice => !@beer |> mfloat)
+
+    [<TestMethod>]
+    member __.Parse() =
+        let unitMap, msgOpt = Frink.parse "length    =!= m // meter
+time      =!= s // second
+mass      =!=  kg   // kilogram
+N :=              kg m / s^2  // force
+pi :=                  3.141592653589793238
+hbar :=                (6.62607015ee-34 N m s) / (2 pi)
+c :=                   299792458 m/s   // speed of light
+G :=             6.67430e-11 N m^2 / kg^2  // gravity
+planckmass :=          (hbar c / G)^(1/2)"
+        Assert.IsTrue(msgOpt.IsNone)
+        let unit = unitMap.["planckmass"]
+        Assert.AreEqual(2.1764343427179E-08, unit |> Unit.scale |> float)
+        Assert.AreEqual(
+            set [ BaseUnit.create "mass" "kg", 1],
+            unit |> Unit.baseUnits)

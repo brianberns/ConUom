@@ -345,7 +345,7 @@ module private FrinkParser =
                 |>> List.fold (*) Unit.one
 
         /// Parses a unified product followed by a (possibly implicit)
-        /// power. E.g. "(hbar c / G)^(1/2)"
+        /// power. E.g. "(m s)^2"
         let parseUnifiedProduct =
             parse {
                 do! skipChar '('
@@ -356,7 +356,7 @@ module private FrinkParser =
                 do! spaces
                 let! power = parsePower
                 return unit ** power
-            }
+            } |> attempt
 
         /// Parses a unified expression - something that can be the denominator
         /// of a quotient.
@@ -388,12 +388,23 @@ module private FrinkParser =
                         preturn (num/den)
             }
 
+        /// Parses a quotient raised to a power.
+        let parseQuotientPower =
+            parse {
+                do! skipChar '('
+                let! unit = parseQuotient
+                do! skipChar ')'
+                let! power = parsePower
+                return unit ** power
+            }
+
         /// Parses an expression.
         let parseExpr =
             choice [
                 parseQuotient
                 parseTermPowerProduct
                 parseUnified
+                parseQuotientPower
             ]
 
         /// Parses the product of one or more expressions. E.g. "1/1000 kg".
@@ -451,9 +462,11 @@ module private FrinkParser =
         skipJunk
             >>. skipMany (consumeDecl .>> skipJunk)
 
+module Frink =
+
     /// Parses the given Frink declarations.
     let parse str =
-        let parser = consumeDecls .>> eof   // force consumption of entire string
+        let parser = FrinkParser.consumeDecls .>> eof   // force consumption of entire string
         let str = if isNull str then "" else str
         let state =
             {
@@ -467,8 +480,6 @@ module private FrinkParser =
             | Success ((), state', _) -> state'.Units, None
             | Failure (msg, _, state') -> state'.Units, Some msg
 
-module Frink =
-
     /// Parses the given Frink file.
     let parseFile path =
-        File.ReadAllText path |> FrinkParser.parse
+        File.ReadAllText path |> parse
