@@ -111,7 +111,7 @@ module private BigRational =
             let! eOpt = opt (skipChar 'e')
             let! exp =
                 if eOpt.IsSome then pint32
-                else preturn 1
+                else preturn 0
             return n * (10N ** exp)
         }
 
@@ -125,9 +125,14 @@ module private BigRational =
                 |> attempt
 
         parse {
+            let! sign =
+                opt (skipChar '-')
+                    |>> Option.isSome
+                    |>> (fun isNeg ->
+                        if isNeg then -1I else 1I)
             let! num = BigInt.parse
             let! den = parseDen <|>% 1I
-            return BigRational.FromBigIntFraction(num, den)
+            return BigRational.FromBigIntFraction(sign * num, den)
         }
 
     /// Parses a rational.
@@ -310,12 +315,19 @@ module private FrinkParser =
             parse {
                 do! skipChar '^'
                 do! spaces
-                return! pint32 // BigRational.parse
+                return!
+                    choice [
+                        BigRational.parse
+                        between
+                            (skipChar '(')
+                            (skipChar ')')
+                            BigRational.parse
+                    ]
             } |> attempt
 
         /// Parses an explicit or implicit power.
         let parsePower =
-            parsePowerExplicit <|>% 1
+            parsePowerExplicit <|>% 1N
 
         /// Parses a term followed by a (possibly implicit) power.
         /// E.g. "m^2".
@@ -324,7 +336,7 @@ module private FrinkParser =
                 let! unit = parseTerm
                 do! spaces
                 let! power = parsePower
-                return unit ^ power
+                return unit ** power
             } |> attempt
 
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
@@ -343,7 +355,7 @@ module private FrinkParser =
                 do! skipChar ')'
                 do! spaces
                 let! power = parsePower
-                return unit ^ power
+                return unit ** power
             }
 
         /// Parses a unified expression - something that can be the denominator

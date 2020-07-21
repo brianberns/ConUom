@@ -120,19 +120,35 @@ module Unit =
 
     /// Raises a unit to a power.
     let (^) unit power =
-        if power = 0 then   // a^0 -> 1
+        if power = 0N then   // a^0 -> 1
             one
         else
+
             let baseMap =
                 unit.BaseMap
                     |> Map.toSeq
                     |> Seq.map (fun (baseUnit, oldPower) ->
                         assert(oldPower <> 0)
-                        baseUnit, oldPower * power)   // (a^n)^m -> a^(n*m)
+                        let newPower =   // (a^n)^m -> a^(n*m)
+                            let newPower = (BigRational.FromInt oldPower) * power
+                            if newPower.IsInteger then
+                                int newPower
+                            else
+                                failwithf "Invalid power: (%A)^%A" unit power
+                        baseUnit, newPower)
                     |> Map
+
+            let scale =
+                if power.IsInteger then
+                    unit.Scale ** int power
+                else
+                    Math.Pow(float unit.Scale, float power)   // have to use floating point :(
+                        |> decimal
+                        |> BigRational.FromDecimal
+
             {
                 BaseMap = baseMap
-                Scale = unit.Scale ** power
+                Scale = scale
             }
 
 type Unit with
@@ -149,8 +165,13 @@ type Unit with
     static member (@@)(scale, unit) =
         BigRational.FromInt(scale) |> Unit.create unit
 
+    /// Raises a unit to a power.
+    static member Pow(unit, power) =
+        Unit.(^) unit power
+
 [<AutoOpen>]
 module UnitExt =
 
-    /// Raises a unit to a power.
-    let (^) = Unit.(^)
+    /// Raises a unit to an integer power.
+    let (^) unit power =
+        Unit.(^) unit (BigRational.FromInt power)
