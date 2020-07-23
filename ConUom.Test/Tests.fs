@@ -167,3 +167,22 @@ survey ::- 1200/3937 m/ft  // survey length ratio"
         msgOpt |> Option.iter Assert.Fail
         let scale = unitMap.Prefixes.["survey"]
         Assert.AreEqual((1200N/3937N) / (3048N/10000N), scale)
+
+    [<TestMethod>]
+    member __.ParseHubbleConstant() =
+        let lookup, msgOpt = Frink.parse "
+mega ::- 1ee6
+length =!= m
+km = 1000 m
+time =!= s
+au := 149597870700 m
+arcsec := 1/60 1/60 1/360 2 3.141592653589793238
+parsec := au / arcsec
+hubble_constant := 67.8 km/s/megaparsec
+age_of_universe = 1/hubble_constant"
+        msgOpt |> Option.iter Assert.Fail
+        let unit = lookup.Units.["age_of_universe"]
+        Assert.AreEqual(4.551146875355999E+17, unit |> Unit.scale |> float)
+        Assert.AreEqual(
+            set [ BaseUnit.create "time" "s", 1 ],
+            unit |> Unit.baseUnits)

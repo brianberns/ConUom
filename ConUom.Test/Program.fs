@@ -12,4 +12,9 @@ module Program =
         for (key, value) in lookup.Units |> Map.toSeq do
             printfn "%s: %A" key value
         msgOpt |> Option.iter (printfn ""; printfn "%A")
+        (*
+        try
+            TestClass().ParseHubbleConstant()
+        with ex -> printfn "%A" ex
+        *)
         0

@@ -286,14 +286,21 @@ module private FrinkParser =
 
         /// Parses a quotient.
         let parseQuotient =
-            parse {
-                let! num = parseQuotientable
-                do! spaces
-                do! skipChar '/'
-                do! spaces
-                let! den = parseQuotientable
-                return num / den
-            } |> attempt
+
+            let inner parser =
+                parse {
+                    let! num = parser
+                    do! spaces
+                    do! skipChar '/'
+                    do! spaces
+                    let! den = parseQuotientable
+                    return num / den
+                } |> attempt
+
+            choice [
+                inner (inner parseQuotientable)   // e.g. "km/s/megaparsec"
+                inner parseQuotientable           // e.g. "km/s"
+            ]
 
         /// Parses a potential multiplicand. E.g. "m", "m^2", or "m/s".
         let parseMultiplicand =
