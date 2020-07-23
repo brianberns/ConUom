@@ -156,3 +156,15 @@ m^2  kg s^-3 ||| power"
                 BaseUnit.create "time" "s", -3
             ],
             unit |> Unit.baseUnits)
+
+    [<TestMethod>]
+    member __.ParseSurvey() =
+        let unitMap, msgOpt = Frink.parse "
+length =!= m
+inch := 2.54ee-2 m
+ft := 12 inch
+survey ::- 1200/3937 m/ft  // survey length ratio"
+        msgOpt |> Option.iter Assert.Fail
+        let unit = unitMap.["survey"]
+        Assert.AreEqual(1200N/3937N, unit |> Unit.scale)
+        Assert.AreEqual(Set.empty, unit |> Unit.baseUnits)

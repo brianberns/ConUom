@@ -333,10 +333,14 @@ module private FrinkParser =
         let parseTermPower =
             acceptPower parseTerm
 
+        /// Parses the product of one or more units.
+        let parseUnitProduct parseUnit =
+            many1 (parseUnit .>> spaces)   // note: consumes trailing spaces
+                |>> List.fold (*) Unit.one
+
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
         let parseTermPowerProduct =
-            many1 (parseTermPower .>> spaces)   // note: consumes trailing spaces
-                |>> List.fold (*) Unit.one
+            parseUnitProduct parseTermPower
 
         /// Parses a potential numerator or denominator. E.g. "(m s^-1)"
         /// or "kg", but not "m s^-1".
@@ -357,7 +361,7 @@ module private FrinkParser =
                 return num / den
             } |> attempt
 
-        /// Parses a potential multiplicand. E.g. "m" or "m/s".
+        /// Parses a potential multiplicand. E.g. "m", "m^2", or "m/s".
         let parseMultiplicand =
             choice [
                 parseQuotient
@@ -366,8 +370,7 @@ module private FrinkParser =
 
         /// Parses a product. E.g. "1200/3937 m/ft".
         let parseProduct =
-            many1 parseMultiplicand
-                |>> List.fold (*) Unit.one
+            parseUnitProduct parseMultiplicand
 
         /// Parses an expression.
         let parse =
