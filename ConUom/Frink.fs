@@ -8,7 +8,7 @@ open MathNet.Numerics
 open FParsec
 
 /// State maintained by the Frink parser.
-type private State =
+type UnitLookup =
     {
         /// Prefixes. E.g. "milli" = 1/1000.
         Prefixes : Map<string, BigRational>
@@ -17,24 +17,24 @@ type private State =
         Units : Map<string, Unit>
     }
 
-module private State =
+module UnitLookup =
 
     /// Tries to find the unit with the given name.
-    let tryFindUnit name state =
+    let tryFindUnit name lookup =
 
         let tryFind name =
-            state.Units
+            lookup.Units
                 |> Map.tryFind name
                 |> Option.orElseWith (fun () ->
 
                         // try prefixes if name not found
-                    state.Prefixes
+                    lookup.Prefixes
                         |> Map.toSeq
                         |> Seq.tryPick (fun (prefix, scale) ->
                             if name.StartsWith(prefix) then
                                 let name' =
                                     name.Substring(prefix.Length)
-                                state.Units
+                                lookup.Units
                                     |> Map.tryFind name'
                                     |> Option.map (fun unit ->
                                         scale @@ unit)
@@ -49,8 +49,8 @@ module private State =
                 else None)
 
     /// Tries to find the prefix with the given name.
-    let tryFindPrefix name state =
-        state.Prefixes
+    let tryFindPrefix name lookup =
+        lookup.Prefixes
             |> Map.tryFind name
 
 #if DEBUG
@@ -209,70 +209,14 @@ module private FrinkParser =
             return! setUserState <| consumer state value
         }
 
-    module Prefix =
-
-        /// Adds the given prefix to the given state.
-        let add state (name, scale) =
-            { state with
-                Prefixes = state.Prefixes |> Map.add name scale }
-
-        /// Parses the declaration of a base prefix. E.g. "milli ::- 1/1000".
-        let parseBaseDecl =
-            parse {
-                let! name = identifier
-                do! spaces
-                do! skipString "::-"
-                do! spaces
-                let! scale = BigRational.parse
-                return name, scale
-            } |> attempt
-
-        /// Parses a prefix reference.
-        let parseRef =
-            parse {
-                let! name = identifier
-                let! state = getUserState
-                let scaleOpt = state |> State.tryFindPrefix name
-                return!
-                    match scaleOpt with
-                        | Some scale -> preturn scale
-                        | None -> failf "Unknown prefix: %s" name
-            } |> attempt
-
-        /// Parses the declaration of a derived prefix. E.g. "m :- milli".
-        let parseDerivedDecl =
-            parse {
-                let! newName = identifier
-                do! spaces
-                do! skipString ":-"
-                do! spaces
-                let! scaleOpt = opt BigRational.parse
-                let! scale =
-                    match scaleOpt with
-                        | Some value -> preturn value
-                        | None -> parseRef
-                return newName, scale
-            } |> attempt
-
-        /// Parses a prefix declaration.
-        let parseDecl =
-            choice [
-                parseBaseDecl
-                parseDerivedDecl
-            ]
-
-        /// Consumes a prefix declaration.
-        let consumeDecl =
-            consume parseDecl add
-
     module Expr =
 
         /// Parses a reference to a unit.
         let parseRef =
             parse {
                 let! name = identifier
-                let! state = getUserState
-                let unitOpt = state |> State.tryFindUnit name
+                let! lookup = getUserState
+                let unitOpt = lookup |> UnitLookup.tryFindUnit name
                 return!
                     match unitOpt with
                         | Some unit -> preturn unit
@@ -331,7 +275,7 @@ module private FrinkParser =
         /// Parses a term followed by a (possibly implicit) power.
         /// E.g. "m^2".
         let parseTermPower =
-            acceptPower parseTerm
+            (acceptPower parseTerm)
 
         /// Parses the product of one or more units.
         let parseUnitProduct parseUnit =
@@ -378,12 +322,78 @@ module private FrinkParser =
                 |> acceptParenthesized
                 |> acceptPower
 
+    module Prefix =
+
+        /// Adds the given prefix to the given lookup.
+        let add lookup (name, scale) =
+            { lookup with
+                Prefixes = lookup.Prefixes |> Map.add name scale }
+
+        /// Parses a dimensionless scale.
+        let parseScale =
+            parse {
+                let! unit = Expr.parse
+                if unit.BaseMap.IsEmpty then
+                    return unit.Scale
+                else
+                    return! failf "Not a scale: %A" unit
+            }                    
+
+        /// Parses the declaration of a base prefix. E.g. "milli ::- 1/1000".
+        let parseBaseDecl =
+            parse {
+                let! name = identifier
+                do! spaces
+                do! skipString "::-"
+                do! spaces
+                let! scale = parseScale
+                return name, scale
+            } |> attempt
+
+        /// Parses a prefix reference.
+        let parseRef =
+            parse {
+                let! name = identifier
+                let! lookup = getUserState
+                let scaleOpt = lookup |> UnitLookup.tryFindPrefix name
+                return!
+                    match scaleOpt with
+                        | Some scale -> preturn scale
+                        | None -> failf "Unknown prefix: %s" name
+            } |> attempt
+
+        /// Parses the declaration of a derived prefix. E.g. "m :- milli".
+        let parseDerivedDecl =
+            parse {
+                let! newName = identifier
+                do! spaces
+                do! skipString ":-"
+                do! spaces
+                let! scaleOpt = opt parseScale
+                let! scale =
+                    match scaleOpt with
+                        | Some value -> preturn value
+                        | None -> parseRef
+                return newName, scale
+            } |> attempt
+
+        /// Parses a prefix declaration.
+        let parseDecl =
+            choice [
+                parseBaseDecl
+                parseDerivedDecl
+            ]
+
+        /// Consumes a prefix declaration.
+        let consumeDecl =
+            consume parseDecl add
+
     module Unit =
 
-        /// Adds the given unit to the given state.
-        let add state (name, unit) =
-            { state with
-                Units = state.Units |> Map.add name unit }
+        /// Adds the given unit to the given lookup.
+        let add lookup (name, unit) =
+            { lookup with
+                Units = lookup.Units |> Map.add name unit }
 
         /// Parses the declaration of a base unit. E.g. "length =!= m".
         let parseBaseDecl =
@@ -452,7 +462,7 @@ module Frink =
     let parse str =
         let parser = FrinkParser.consumeDecls .>> eof   // force consumption of entire string
         let str = if isNull str then "" else str
-        let state =
+        let lookup =
             {
                 Prefixes = Map.empty
                 Units =
@@ -460,9 +470,9 @@ module Frink =
                         "<<IMAGINARY_UNIT>>", Unit.one   // ick
                     ]
             }
-        match runParserOnString parser state "" str with
-            | Success ((), state', _) -> state'.Units, None
-            | Failure (msg, _, state') -> state'.Units, Some msg
+        match runParserOnString parser lookup "" str with
+            | Success ((), lookup', _) -> lookup', None
+            | Failure (msg, _, lookup') -> lookup', Some msg
 
     /// Parses the given Frink file.
     let parseFile path =

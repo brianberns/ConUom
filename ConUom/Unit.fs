@@ -6,8 +6,7 @@ open MathNet.Numerics
 /// A unit of measurement.
 [<StructuredFormatDisplay("{Name}")>]
 type Unit =
-    private {
-
+    {
         /// Base units that this unit derives from. E.g. Units
         /// of acceleration are based on: m^1, s^-2.
         BaseMap : Map<BaseUnit, int (*power*)>

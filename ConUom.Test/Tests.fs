@@ -123,7 +123,7 @@ type TestClass () =
 
     [<TestMethod>]
     member __.ParsePlanckMass() =
-        let unitMap, msgOpt = Frink.parse "length    =!= m // meter
+        let lookup, msgOpt = Frink.parse "length    =!= m // meter
 time      =!= s // second
 mass      =!=  kg   // kilogram
 N :=              kg m / s^2  // force
@@ -133,7 +133,7 @@ c :=                   299792458 m/s   // speed of light
 G :=             6.67430e-11 N m^2 / kg^2  // gravity
 planck_mass :=          (hbar c / G)^(1/2)"
         msgOpt |> Option.iter Assert.Fail
-        let unit = unitMap.["planck_mass"]
+        let unit = lookup.Units.["planck_mass"]
         Assert.AreEqual(2.1764343427179E-08, unit |> Unit.scale |> float)
         Assert.AreEqual(
             set [ BaseUnit.create "mass" "kg", 1],
@@ -141,13 +141,13 @@ planck_mass :=          (hbar c / G)^(1/2)"
 
     [<TestMethod>]
     member __.ParsePower() =
-        let unitMap, msgOpt = Frink.parse "
+        let lookup, msgOpt = Frink.parse "
 length =!= m
 time =!= s
 mass =!= kg
 m^2  kg s^-3 ||| power"
         msgOpt |> Option.iter Assert.Fail
-        let unit = unitMap.["power"]
+        let unit = lookup.Units.["power"]
         Assert.AreEqual(1N, unit |> Unit.scale)
         Assert.AreEqual(
             set [
@@ -165,6 +165,5 @@ inch := 2.54ee-2 m
 ft := 12 inch
 survey ::- 1200/3937 m/ft  // survey length ratio"
         msgOpt |> Option.iter Assert.Fail
-        let unit = unitMap.["survey"]
-        Assert.AreEqual(1200N/3937N, unit |> Unit.scale)
-        Assert.AreEqual(Set.empty, unit |> Unit.baseUnits)
+        let scale = unitMap.Prefixes.["survey"]
+        Assert.AreEqual((1200N/3937N) / (3048N/10000N), scale)
