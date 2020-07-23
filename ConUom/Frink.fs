@@ -79,7 +79,7 @@ module private Decimal =
         parse {
             let! whole = many1Satisfy isDigit
             do! skipChar '.'
-            let! fraction = many1Satisfy isDigit
+            let! fraction = manySatisfy isDigit
             return sprintf "%s.%s" whole fraction
                 |> Decimal.Parse
         } |> attempt
@@ -384,11 +384,12 @@ module private FrinkParser =
         /// E.g. "kilogram := kg"
         /// E.g. "gram := 1/1000 kg"
         /// E.g. "radian := 1"
+        /// E.g. "earthvolume = 4/3 pi ..." (using = instead of :=, for some reason)
         let parseDerivedDecl =
             parse {
                 let! name = identifier
                 do! spaces
-                do! skipString ":="
+                do! skipString ":=" <|> skipString "="
                 do! spaces
                 let! unit = Expr.parse
                 return name, unit
