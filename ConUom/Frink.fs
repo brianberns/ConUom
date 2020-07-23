@@ -73,7 +73,8 @@ module private Debug =
 
 module private Decimal =
 
-    /// Parses a simple positive decimal number. E.g. "1.23".
+    /// Parses a simple positive decimal number. Must include
+    /// a decimal point. E.g. "1.23".
     let parse =
         parse {
             let! whole = many1Satisfy isDigit
@@ -93,60 +94,44 @@ module private BigInt =
 
 module private BigRational =
 
-    /// Parses a positive exact exponential as a rational. E.g. "1.23ee45".
-    let parseExactExponential =
-
-        let parseBase =
-            choice [
-                Decimal.parse |>> BigRational.FromDecimal
-                BigInt.parse |>> BigRational.FromBigInt
-            ]
-
+    /// Parses a positive fraction as a rational. E.g. "1/2".
+    let parseFraction =
         parse {
-            let! n = parseBase
-            do! skipString "ee"
-            let! exp = pint32
+            let! num = BigInt.parse
+            do! skipChar '/'
+            let! den = BigInt.parse
+            return BigRational.FromBigIntFraction(num, den)
+        } |> attempt
+
+    /// Parses a positive number as a rational. E.g. "1", "1e2", "1.23", "1.23e-4".
+    let parseDecimal =
+        parse {
+            let! n =
+                choice [
+                    Decimal.parse |>> BigRational.FromDecimal
+                    BigInt.parse |>> BigRational.FromBigInt
+                ]
+            let! exp =
+                ((skipString "ee" <|> skipString "e") >>. pint32)
+                    <|>% 0
             return n * (10N ** exp)
         } |> attempt
 
-    /// Parses a positive decimal number as a rational. E.g. "1.23", "1.23e-4".
-    let parseDecimal =
+    /// Parses a signed value.
+    let parseSigned parser =
         parse {
-            let! n = Decimal.parse |>> BigRational.FromDecimal
-            let! eOpt = opt (skipChar 'e')
-            let! exp =
-                if eOpt.IsSome then pint32
-                else preturn 0
-            return n * (10N ** exp)
-        }
-
-    /// Parses a fraction (or whole number) as a rational.
-    let parseFraction =
-
-            // parse entire denominator or leave slash unparsed (e.g. "1/unit")
-        let parseDen =
-            skipChar '/'
-                >>. BigInt.parse
-                |> attempt
-
-        parse {
-            let! sign =
-                opt (skipChar '-')
-                    |>> Option.isSome
-                    |>> (fun isNeg ->
-                        if isNeg then -1I else 1I)
-            let! num = BigInt.parse
-            let! den = parseDen <|>% 1I
-            return BigRational.FromBigIntFraction(sign * num, den)
+            let! hyphenOpt = opt (skipChar '-')
+            let sign = if hyphenOpt.IsNone then 1N else -1N
+            let! value = parser
+            return sign * value
         }
 
     /// Parses a rational.
     let parse =
         choice [
-            parseExactExponential
+            parseFraction
             parseDecimal
-            parseFraction   // must be last
-        ]
+        ] |> parseSigned
 
 module private FrinkParser =
 
