@@ -269,7 +269,15 @@ module private FrinkParser =
 
         /// Parses the product of one or more units.
         let parseUnitProduct parseUnit =
-            many1 (parseUnit .>> spaces)   // note: consumes trailing spaces
+
+            let skip =
+                parse {
+                    do! spaces
+                    do! optional (skipChar '*')
+                    do! spaces
+                }
+
+            many1 (parseUnit .>> skip)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
 
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
