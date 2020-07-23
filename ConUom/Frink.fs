@@ -19,6 +19,11 @@ type UnitLookup =
 
 module UnitLookup =
 
+    /// Tries to find the prefix with the given name.
+    let tryFindPrefix name lookup =
+        lookup.Prefixes
+            |> Map.tryFind name
+
     /// Tries to find the unit with the given name.
     let tryFindUnit name lookup =
 
@@ -48,10 +53,10 @@ module UnitLookup =
                     tryFind (name.Substring(0, name.Length-1))
                 else None)
 
-    /// Tries to find the prefix with the given name.
-    let tryFindPrefix name lookup =
-        lookup.Prefixes
-            |> Map.tryFind name
+                // try a prefix instead
+            |> Option.orElseWith (fun () ->
+                tryFindPrefix name lookup
+                    |> Option.map Unit.createScale)
 
 #if DEBUG
 [<AutoOpen>]
