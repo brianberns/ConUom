@@ -339,17 +339,6 @@ module private FrinkParser =
                     return! failf "Not a scale: %A" unit
             }                    
 
-        /// Parses the declaration of a base prefix. E.g. "milli ::- 1/1000".
-        let parseBaseDecl =
-            parse {
-                let! name = identifier
-                do! spaces
-                do! skipString "::-"
-                do! spaces
-                let! scale = parseScale
-                return name, scale
-            } |> attempt
-
         /// Parses a prefix reference.
         let parseRef =
             parse {
@@ -362,27 +351,22 @@ module private FrinkParser =
                         | None -> failf "Unknown prefix: %s" name
             } |> attempt
 
-        /// Parses the declaration of a derived prefix. E.g. "m :- milli".
-        let parseDerivedDecl =
-            parse {
-                let! newName = identifier
-                do! spaces
-                do! skipString ":-"
-                do! spaces
-                let! scaleOpt = opt parseScale
-                let! scale =
-                    match scaleOpt with
-                        | Some value -> preturn value
-                        | None -> parseRef
-                return newName, scale
-            } |> attempt
+        let parseScaleOrRef =
+            choice [
+                parseScale
+                parseRef
+            ]
 
         /// Parses a prefix declaration.
         let parseDecl =
-            choice [
-                parseBaseDecl
-                parseDerivedDecl
-            ]
+            parse {
+                let! name = identifier
+                do! spaces
+                do! skipString "::-" <|> skipString ":-"
+                do! spaces
+                let! scale = parseScaleOrRef
+                return name, scale
+            } |> attempt
 
         /// Consumes a prefix declaration.
         let consumeDecl =
