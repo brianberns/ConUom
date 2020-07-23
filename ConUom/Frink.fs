@@ -265,25 +265,9 @@ module private FrinkParser =
         let consumeDecl =
             consume parseDecl add
 
-    module Unit =
+    module Expr =
 
-        /// Adds the given unit to the given state.
-        let add state (name, unit) =
-            { state with
-                Units = state.Units |> Map.add name unit }
-
-        /// Parses the declaration of a base unit. E.g. "length =!= m".
-        let parseBaseDecl =
-            parse {
-                let! dim = identifier
-                do! spaces
-                do! skipString "=!="
-                do! spaces
-                let! name = identifier
-                return name, Unit.createBase dim name
-            } |> attempt
-
-        /// Parses a unit reference.
+        /// Parses a reference to a unit.
         let parseRef =
             parse {
                 let! name = identifier
@@ -310,107 +294,104 @@ module private FrinkParser =
                 parseRef
             ]
 
-        /// Parses an explicit power.
-        let parsePowerExplicit =
+        /// Requires parentheses around the given parser.
+        let parseParenthesized parser =
+            parse {
+                do! skipChar '('
+                let! value = parser
+                do! skipChar ')'
+                return value
+            } |> attempt
+
+        /// Accepts (but doesn't require) parentheses around the given
+        /// parser.
+        let acceptParenthesized parser =
+            choice [
+                parser
+                parseParenthesized parser
+            ]
+
+        /// Parses an explicit power. E.g. "^2".
+        let parsePower =
             parse {
                 do! skipChar '^'
                 do! spaces
-                return!
-                    choice [
-                        BigRational.parse
-                        between
-                            (skipChar '(')
-                            (skipChar ')')
-                            BigRational.parse
-                    ]
+                return! acceptParenthesized BigRational.parse
             } |> attempt
 
-        /// Parses an explicit or implicit power.
-        let parsePower =
-            parsePowerExplicit <|>% 1N
+        /// Accepts (but doesn't require) a power after the given parser.
+        let inline acceptPower<'t when 't : (static member Pow : 't * BigRational -> 't)> (parser : Parser<'t, _>) =
+            parse {
+                let! value = parser
+                do! spaces
+                let! power = parsePower <|>% 1N
+                return value ** power
+            } |> attempt
 
         /// Parses a term followed by a (possibly implicit) power.
         /// E.g. "m^2".
         let parseTermPower =
-            parse {
-                let! unit = parseTerm
-                do! spaces
-                let! power = parsePower
-                return unit ** power
-            } |> attempt
+            acceptPower parseTerm
 
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
         let parseTermPowerProduct =
             many1 (parseTermPower .>> spaces)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
 
-        /// Parses a unified product followed by a (possibly implicit)
-        /// power. E.g. "(m s)^2"
-        let parseUnifiedProduct =
-            parse {
-                do! skipChar '('
-                do! spaces
-                let! unit = parseTermPowerProduct
-                do! spaces
-                do! skipChar ')'
-                do! spaces
-                let! power = parsePower
-                return unit ** power
-            } |> attempt
-
-        /// Parses a unified expression - something that can be the denominator
-        /// of a quotient.
-        let parseUnified =
+        /// Parses a potential numerator or denominator. E.g. "(m s^-1)"
+        /// or "kg", but not "m s^-1".
+        let parseQuotientable =
             choice [
-                parseUnifiedProduct
+                parseParenthesized parseTermPowerProduct
                 parseTermPower
             ]
 
-        /// Parses a quotient. E.g. "dyne cm  / (abamp sec)".
+        /// Parses a quotient.
         let parseQuotient =
-
-            let parsePair =
-                parse {
-                    let! num = parseTermPowerProduct <|> parseUnified
-                    do! spaces
-                    do! skipChar '/'
-                    do! spaces
-                    let! den = parseUnified
-                    return num, den
-                } |> attempt
-
             parse {
-                let! num, den = parsePair
-                return!   // no Combine method on computation builder
-                    if den.Scale = 0N then
-                        failf "Denominator is zero: (%A)/(%A)" num den
-                    else
-                        preturn (num/den)
-            }
+                let! num = parseQuotientable
+                do! spaces
+                do! skipChar '/'
+                do! spaces
+                let! den = parseQuotientable
+                return num / den
+            } |> attempt
 
-        /// Parses a quotient raised to a power.
-        let parseQuotientPower =
-            parse {
-                do! skipChar '('
-                let! unit = parseQuotient
-                do! skipChar ')'
-                let! power = parsePower
-                return unit ** power
-            }
-
-        /// Parses an expression.
-        let parseExpr =
+        /// Parses a potential multiplicand. E.g. "m" or "m/s".
+        let parseMultiplicand =
             choice [
                 parseQuotient
-                parseTermPowerProduct
-                parseUnified
-                parseQuotientPower
+                parseQuotientable
             ]
 
-        /// Parses the product of one or more expressions. E.g. "1/1000 kg".
-        let parseExprProduct =
-            many1 parseExpr
+        /// Parses a product. E.g. "1200/3937 m/ft".
+        let parseProduct =
+            many1 parseMultiplicand
                 |>> List.fold (*) Unit.one
+
+        /// Parses an expression.
+        let parse =
+            parseProduct
+                |> acceptParenthesized
+                |> acceptPower
+
+    module Unit =
+
+        /// Adds the given unit to the given state.
+        let add state (name, unit) =
+            { state with
+                Units = state.Units |> Map.add name unit }
+
+        /// Parses the declaration of a base unit. E.g. "length =!= m".
+        let parseBaseDecl =
+            parse {
+                let! dim = identifier
+                do! spaces
+                do! skipString "=!="
+                do! spaces
+                let! name = identifier
+                return name, Unit.createBase dim name
+            } |> attempt
 
         /// Parses the declaration of a derived unit.
         /// E.g. "kilogram := kg"
@@ -422,7 +403,7 @@ module private FrinkParser =
                 do! spaces
                 do! skipString ":="
                 do! spaces
-                let! unit = parseExprProduct
+                let! unit = Expr.parse
                 return name, unit
             } |> attempt
 
@@ -430,7 +411,7 @@ module private FrinkParser =
         /// E.g. "m^2 K / W ||| thermal_insulance".
         let parseCombinationDecl =
             parse {
-                let! unit = parseExpr
+                let! unit = Expr.parse
                 do! spaces
                 do! skipString "|||"
                 do! spaces

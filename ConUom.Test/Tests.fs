@@ -122,7 +122,7 @@ type TestClass () =
             (5 @ one) * (12 @ floz) * junglejuice => !@beer |> mfloat)
 
     [<TestMethod>]
-    member __.Parse() =
+    member __.ParsePlanckMass() =
         let unitMap, msgOpt = Frink.parse "length    =!= m // meter
 time      =!= s // second
 mass      =!=  kg   // kilogram
@@ -131,10 +131,28 @@ pi :=                  3.141592653589793238
 hbar :=                (6.62607015ee-34 N m s) / (2 pi)
 c :=                   299792458 m/s   // speed of light
 G :=             6.67430e-11 N m^2 / kg^2  // gravity
-planckmass :=          (hbar c / G)^(1/2)"
-        Assert.IsTrue(msgOpt.IsNone)
-        let unit = unitMap.["planckmass"]
+planck_mass :=          (hbar c / G)^(1/2)"
+        msgOpt |> Option.iter Assert.Fail
+        let unit = unitMap.["planck_mass"]
         Assert.AreEqual(2.1764343427179E-08, unit |> Unit.scale |> float)
         Assert.AreEqual(
             set [ BaseUnit.create "mass" "kg", 1],
+            unit |> Unit.baseUnits)
+
+    [<TestMethod>]
+    member __.ParsePower() =
+        let unitMap, msgOpt = Frink.parse "
+length =!= m
+time =!= s
+mass =!= kg
+m^2  kg s^-3 ||| power"
+        msgOpt |> Option.iter Assert.Fail
+        let unit = unitMap.["power"]
+        Assert.AreEqual(1N, unit |> Unit.scale)
+        Assert.AreEqual(
+            set [
+                BaseUnit.create "length" "m", 2
+                BaseUnit.create "mass" "kg", 1
+                BaseUnit.create "time" "s", -3
+            ],
             unit |> Unit.baseUnits)
