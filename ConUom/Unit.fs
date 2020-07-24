@@ -45,29 +45,22 @@ module Unit =
             Scale = 1N
         }
 
-    /// Creates a new unit based on the given unit.
-    let create unit scale =
-        {
-            BaseMap = unit.BaseMap
-            Scale = scale * unit.Scale
-        }
-
-    /// Creates a dimensionless unit.
-    let createScale scale =
+    /// Creates a dimensionless unit of the given scale.
+    let fromScale scale =
         {
             BaseMap = Map.empty
             Scale = scale
         }
+
+    /// Dimensionless unit of scale one.
+    let one =
+        fromScale 1N
 
     /// Answers the given unit's set of base units.
     let baseUnits unit =
         unit.BaseMap
             |> Map.toSeq
             |> Set
-
-    /// Answers the given unit's scale.
-    let scale unit =
-        unit.Scale
 
     /// Multiplies two units.
     let mult unitA unitB =
@@ -113,12 +106,8 @@ module Unit =
     let div numUnit denUnit =
         mult numUnit (invert denUnit)
 
-    /// Dimensionless unit of scale one.
-    let one =
-        createScale 1N
-
-    /// Raises a unit to a power.
-    let (^) unit power =
+    /// Raises a unit to a rational power.
+    let pow power unit =
         if power = 0N then   // a^0 -> 1
             one
         else
@@ -152,25 +141,59 @@ module Unit =
 
 type Unit with
 
-    /// Creates a new unit based on the given unit.
-    static member (@@)(scale, unit) =
-        scale |> Unit.create unit
+    static member ( *)(unitA, unitB) =
+        Unit.mult unitA unitB
 
-    /// Creates a new unit based on the given unit.
-    static member (@@)(scale, unit) =
-        BigRational.FromDecimal(scale) |> Unit.create unit
+    static member (*)(unit, scale) =
+        Unit.mult unit (Unit.fromScale scale)
 
-    /// Creates a new unit based on the given unit.
-    static member (@@)(scale, unit) =
-        BigRational.FromInt(scale) |> Unit.create unit
+    static member (*)(scale, unit) =
+        Unit.mult (Unit.fromScale scale) unit
 
-    /// Raises a unit to a power.
+    static member (*)(unit, scale) =
+        Unit.mult unit (scale |> BigRational.FromInt |> Unit.fromScale)
+
+    static member (*)(scale, unit) =
+        Unit.mult (scale |> BigRational.FromInt |> Unit.fromScale) unit
+
+    static member (*)(unit, scale) =
+        Unit.mult unit (scale |> BigRational.FromDecimal |> Unit.fromScale)
+
+    static member (*)(scale, unit) =
+        Unit.mult (scale |> BigRational.FromDecimal |> Unit.fromScale) unit
+
+    static member (/)(unitA, unitB) =
+        Unit.div unitA unitB
+
+    static member (/)(unit, scale) =
+        Unit.div unit (Unit.fromScale scale)
+
+    static member (/)(scale, unit) =
+        Unit.div (Unit.fromScale scale) unit
+
+    static member (/)(unit, scale) =
+        Unit.div unit (scale |> BigRational.FromInt |> Unit.fromScale)
+
+    static member (/)(scale, unit) =
+        Unit.div (scale |> BigRational.FromInt |> Unit.fromScale) unit
+
+    static member (/)(unit, scale) =
+        Unit.div unit (scale |> BigRational.FromDecimal |> Unit.fromScale)
+
+    static member (/)(scale, unit) =
+        Unit.div (scale |> BigRational.FromDecimal |> Unit.fromScale) unit
+
+    /// Raises a unit to a rational power. This is invoked via ** rather than ^.
     static member Pow(unit, power) =
-        Unit.(^) unit power
+        Unit.pow power unit
+
+    /// Raises a unit to an integer power. This is invoked via ** rather than ^.
+    static member Pow(unit, power : int) =
+        unit ** (BigRational.FromInt power)
 
 [<AutoOpen>]
 module UnitExt =
 
     /// Raises a unit to an integer power.
-    let (^) unit power =
-        Unit.(^) unit (BigRational.FromInt power)
+    let (^) (unit : Unit) (power : int) =
+        unit ** power

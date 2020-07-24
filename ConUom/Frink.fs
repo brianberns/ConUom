@@ -42,7 +42,7 @@ module UnitLookup =
                                 lookup.Units
                                     |> Map.tryFind name'
                                     |> Option.map (fun unit ->
-                                        scale @@ unit)
+                                        scale * unit)
                             else None))
 
         tryFind name
@@ -56,7 +56,7 @@ module UnitLookup =
                 // try a prefix instead
             |> Option.orElseWith (fun () ->
                 tryFindPrefix name lookup
-                    |> Option.map Unit.createScale)
+                    |> Option.map Unit.fromScale)
 
 #if DEBUG
 [<AutoOpen>]
@@ -220,8 +220,8 @@ module private FrinkParser =
         let parseDimensionless =
             choice [
                 skipChar '+' >>% Unit.one
-                skipChar '-' >>% (-1 @@ Unit.one)
-                BigRational.parse |>> Unit.createScale
+                skipChar '-' >>% (-1 * Unit.one)
+                BigRational.parse |>> Unit.fromScale
             ]
 
         /// Parses a term in an expression.

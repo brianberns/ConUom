@@ -12,29 +12,29 @@ type TestClass () =
     let milli = 1N/1000N
 
     let one = Unit.one
-    let percent = centi @@ one
+    let percent = centi * one
 
-    let meter = Unit.createBase "Length" "m"
-    let cm = centi @@ meter
+    let m = Unit.createBase "Length" "m"
+    let cm = centi * m
 
     let kg = Unit.createBase "Mass" "kg"
-    let g = milli @@ kg
+    let g = milli * kg
 
-    let cc = 1N @@ cm^3
-    let liter = 1000N @@ cc
+    let cc = 1N * (cm^3)
+    let liter = 1000N * cc
 
-    let inch = 2.54m @@ cm
-    let foot = 12N @@ inch
+    let inch = 2.54m * cm
+    let foot = 12N * inch
     let ft = foot
 
-    let pound = 0.45359237m @@ kg 
+    let pound = 0.45359237m * kg 
     let lb = pound
-    let ton = 2000 @@ lb
+    let ton = 2000 * lb
 
-    let gal = 231N @@ inch^3
-    let qt = 0.25m @@ gal
-    let pint = 0.5m @@ qt
-    let floz = (1N/16N) @@ pint
+    let gal = 231 * (inch^3)
+    let qt = 0.25m * gal
+    let pint = 0.5m * qt
+    let floz = (1N/16N) * pint
     let water = 1 @ g/cc
     let alcohol = 0.7893m @ g/cc
 
@@ -111,7 +111,7 @@ type TestClass () =
             14.074492562524341,
             magnum * (13.5m @ percent) => !@beer |> mfloat)
 
-        let proof = 1N/200N @@ one
+        let proof = 1N/200N * one
         let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
         Assert.AreEqual(
             8.78372074090843481138500000,
@@ -134,7 +134,7 @@ G :=             6.67430e-11 N m^2 / kg^2  // gravity
 planck_mass :=          (hbar c / G)^(1/2)"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["planck_mass"]
-        Assert.AreEqual(2.1764343427179E-08, unit |> Unit.scale |> float)
+        Assert.AreEqual(2.1764343427179E-08, float unit.Scale)
         Assert.AreEqual(
             set [ BaseUnit.create "mass" "kg", 1],
             unit |> Unit.baseUnits)
@@ -148,7 +148,7 @@ mass =!= kg
 m^2  kg s^-3 ||| power"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["power"]
-        Assert.AreEqual(1N, unit |> Unit.scale)
+        Assert.AreEqual(1N, unit.Scale)
         Assert.AreEqual(
             set [
                 BaseUnit.create "length" "m", 2
@@ -182,7 +182,7 @@ hubble_constant := 67.8 km/s/megaparsec
 age_of_universe = 1/hubble_constant"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["age_of_universe"]
-        Assert.AreEqual(4.551146875355999E+17, unit |> Unit.scale |> float)
+        Assert.AreEqual(4.551146875355999E+17, float unit.Scale)
         Assert.AreEqual(
             set [ BaseUnit.create "time" "s", 1 ],
             unit |> Unit.baseUnits)

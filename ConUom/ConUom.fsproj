@@ -9,7 +9,6 @@
     <Compile Include="BaseUnit.fs" />
     <Compile Include="Unit.fs" />
     <Compile Include="Measurement.fs" />
-    <Compile Include="Operators.fs" />
     <Compile Include="Frink.fs" />
   </ItemGroup>
 

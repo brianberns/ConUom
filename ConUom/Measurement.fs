@@ -53,13 +53,19 @@ module Measurement =
 
 type Measurement with
 
+    static member (*)(measA, measB) =
+        Measurement.mult measA measB
+
+    static member (/)(measA, measB) =
+        Measurement.div measA measB
+
     /// Converts the given measurement to the given unit.
     static member (=>)(meas, unit) =
         Measurement.convert unit meas
 
     /// Creates a unit from the given measurement.
     static member (!@)(meas) =
-        Unit.create meas.Unit meas.Value
+        meas.Unit * meas.Value
 
 /// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306#2812306
 /// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
