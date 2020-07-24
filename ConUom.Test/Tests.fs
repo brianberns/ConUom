@@ -228,11 +228,11 @@ lightyear := c (365 + 1/4) day"
 
         let mfloat meas = meas.Value |> float
 
-        let beer = (12 @ floz) * (3.2m @ percent) * (water/alcohol).Scale
+        let beer = (12 * floz) * (3.2m * percent) * (water/alcohol)
         let magnum = 1.5m @ liter
         Assert.AreEqual(
             14.074492562524341,
-            magnum * (13.5m @ percent) => !@beer |> mfloat)
+            magnum * (13.5m @ percent) => beer |> mfloat)
 
         let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
         Assert.AreEqual(
@@ -241,7 +241,7 @@ lightyear := c (365 + 1/4) day"
 
         Assert.AreEqual(
             10.83279809499848,
-            5 * (12 @ floz) * junglejuice => !@beer |> mfloat)
+            5 * (12 @ floz) * junglejuice => beer |> mfloat)
 
         Assert.ThrowsException(
             Action(fun () -> lookup?moo |> ignore))
