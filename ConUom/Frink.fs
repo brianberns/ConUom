@@ -77,7 +77,7 @@ module private Decimal =
     /// a decimal point. E.g. "1.23".
     let parse =
         parse {
-            let! whole = many1Satisfy isDigit
+            let! whole = manySatisfy isDigit
             do! skipChar '.'
             let! fraction = manySatisfy isDigit
             return sprintf "%s.%s" whole fraction
@@ -94,23 +94,26 @@ module private BigInt =
 
 module private BigRational =
 
+    /// Parses a simple number as a rational.
+    let parseSimple =
+        choice [
+            Decimal.parse |>> BigRational.FromDecimal
+            BigInt.parse |>> BigRational.FromBigInt
+        ]
+
     /// Parses a positive fraction as a rational. E.g. "1/2".
     let parseFraction =
         parse {
-            let! num = BigInt.parse
+            let! num = parseSimple
             do! skipChar '/'
-            let! den = BigInt.parse
-            return BigRational.FromBigIntFraction(num, den)
+            let! den = parseSimple
+            return num / den
         } |> attempt
 
     /// Parses a positive number as a rational. E.g. "1", "1e2", "1.23", "1.23e-4".
     let parseDecimal =
         parse {
-            let! n =
-                choice [
-                    Decimal.parse |>> BigRational.FromDecimal
-                    BigInt.parse |>> BigRational.FromBigInt
-                ]
+            let! n = parseSimple
             let! exp =
                 ((skipString "ee" <|> skipString "e") >>. pint32)
                     <|>% 0
