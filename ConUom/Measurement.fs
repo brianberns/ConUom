@@ -32,9 +32,8 @@ module Measurement =
 
     /// Converts the given measurement to the given unit.
     let convert unit meas =
-        let baseUnits = unit |> Unit.baseUnits
-        if baseUnits <> (meas.Unit |> Unit.baseUnits) then
-            failwithf "Can't convert '%s' to '%s'" meas.Unit.Name unit.Name
+        if unit.BaseMap <> meas.Unit.BaseMap then
+            failwithf "Can't convert '%A' to '%A'" meas.Unit unit
         let value =
             meas.Value * meas.Unit.Scale / unit.Scale
         create value unit

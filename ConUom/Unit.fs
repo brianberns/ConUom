@@ -62,6 +62,19 @@ module Unit =
             |> Map.toSeq
             |> Set
 
+    /// Adds two units.
+    let add unitA unitB =
+        if unitA.BaseMap <> unitB.BaseMap then
+            failwithf "Can't add '%A' to '%A'" unitA unitB
+        {
+            unitA with
+                Scale = unitA.Scale + unitB.Scale
+        }
+
+    /// Subtracts one unit from another.
+    let sub unitA unitB =
+        unitA + (-unitB)
+
     /// Multiplies two units.
     let mult unitA unitB =
         let baseMap =
@@ -141,8 +154,20 @@ module Unit =
 
 type Unit with
 
+    /// Negates a unit.
+    static member(~-)(unit) =
+        { unit with Scale = -unit.Scale }
+
+    /// Adds two units.
+    static member(+)(unitA, unitB) =
+        Unit.add unitA unitB
+
+    // Subtracts one unit from another.
+    static member(-)(unitA, unitB) =
+        Unit.sub unitA unitB
+
     /// Multiplies two units.
-    static member ( *)(unitA, unitB) =
+    static member (*)(unitA, unitB) =
         Unit.mult unitA unitB
 
     /// Scales a unit.
