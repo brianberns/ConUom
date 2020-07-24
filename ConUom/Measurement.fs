@@ -45,7 +45,7 @@ module Measurement =
             (measA.Value * measB.Value)
             (Unit.mult measA.Unit measB.Unit)
 
-    /// Divides two measurements. E.g. 10 m / 5 s = 2 m/s.
+    /// Divides one measurement by another. E.g. 10 m / 5 s = 2 m/s.
     let div measA measB =
         create
             (measA.Value / measB.Value)
@@ -53,9 +53,11 @@ module Measurement =
 
 type Measurement with
 
+    /// Multiples two measurements.
     static member (*)(measA, measB) =
         Measurement.mult measA measB
 
+    /// Divides one measurement by another.
     static member (/)(measA, measB) =
         Measurement.div measA measB
 

@@ -141,45 +141,59 @@ module Unit =
 
 type Unit with
 
+    /// Multiplies two units.
     static member ( *)(unitA, unitB) =
         Unit.mult unitA unitB
 
+    /// Scales a unit.
     static member (*)(unit, scale) =
         Unit.mult unit (Unit.fromScale scale)
 
+    /// Scales a unit.
     static member (*)(scale, unit) =
         Unit.mult (Unit.fromScale scale) unit
 
+    /// Scales a unit.
     static member (*)(unit, scale) =
         Unit.mult unit (scale |> BigRational.FromInt |> Unit.fromScale)
 
+    /// Scales a unit.
     static member (*)(scale, unit) =
         Unit.mult (scale |> BigRational.FromInt |> Unit.fromScale) unit
 
+    /// Scales a unit.
     static member (*)(unit, scale) =
         Unit.mult unit (scale |> BigRational.FromDecimal |> Unit.fromScale)
 
+    /// Scales a unit.
     static member (*)(scale, unit) =
         Unit.mult (scale |> BigRational.FromDecimal |> Unit.fromScale) unit
 
+    /// Divides one unit by another.
     static member (/)(unitA, unitB) =
         Unit.div unitA unitB
 
+    /// Scales a unit.
     static member (/)(unit, scale) =
         Unit.div unit (Unit.fromScale scale)
 
+    /// Scales a unit.
     static member (/)(scale, unit) =
         Unit.div (Unit.fromScale scale) unit
 
+    /// Scales a unit.
     static member (/)(unit, scale) =
         Unit.div unit (scale |> BigRational.FromInt |> Unit.fromScale)
 
+    /// Scales a unit.
     static member (/)(scale, unit) =
         Unit.div (scale |> BigRational.FromInt |> Unit.fromScale) unit
 
+    /// Scales a unit.
     static member (/)(unit, scale) =
         Unit.div unit (scale |> BigRational.FromDecimal |> Unit.fromScale)
 
+    /// Scales a unit.
     static member (/)(scale, unit) =
         Unit.div (scale |> BigRational.FromDecimal |> Unit.fromScale) unit
 
