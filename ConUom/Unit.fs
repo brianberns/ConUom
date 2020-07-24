@@ -36,6 +36,10 @@ type Unit =
             else
                 sprintf "%s %s" scaleStr units
 
+    /// Negates a unit.
+    static member(~-)(unit) =
+        { unit with Scale = -unit.Scale }
+
 module Unit =
 
     /// Creates a base unit.
@@ -73,7 +77,7 @@ module Unit =
 
     /// Subtracts one unit from another.
     let sub unitA unitB =
-        unitA + (-unitB)
+        add unitA (-unitB)
 
     /// Multiplies two units.
     let mult unitA unitB =
@@ -153,10 +157,6 @@ module Unit =
             }
 
 type Unit with
-
-    /// Negates a unit.
-    static member(~-)(unit) =
-        { unit with Scale = -unit.Scale }
 
     /// Adds two units.
     static member(+)(unitA, unitB) =

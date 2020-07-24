@@ -302,6 +302,17 @@ module private FrinkParser =
             sepBy2 parseUnit skipOp
                 |>> List.reduce (+)
             
+        /// Parses the difference of two units.
+        let parseUnitDiff parseUnit =
+            parse {
+                let! unitA = parseUnit
+                do! spaces
+                do! skipChar '-'
+                do! spaces
+                let! unitB = parseUnit
+                return unitA - unitB
+            } |> attempt
+
         /// Parses the product of one or more units.
         let parseUnitProduct parseUnit =
             let skipOp =
@@ -313,7 +324,10 @@ module private FrinkParser =
 
         /// Parses the sum of one or more terms. E.g. "(365 + 1/4)".
         let parseTermSum =
-            parseUnitSum parseTerm
+            choice [
+                parseUnitSum parseTerm
+                parseUnitDiff parseTerm
+            ]
 
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
         let parseTermPowerProduct =
