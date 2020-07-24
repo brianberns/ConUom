@@ -203,3 +203,13 @@ lightyear := c (365 + 1/4) day"
         Assert.AreEqual(
             set [ BaseUnit.create "length" "m", 1 ],
             unit |> Unit.baseUnits)
+
+    [<TestMethod>]
+    member __.ParseUrl() =
+        use client = new System.Net.WebClient()
+        let lookup, msgOpt =
+            client.DownloadString("https://frinklang.org/frinkdata/units.txt")
+                |> Frink.parse
+        msgOpt |> Option.iter Assert.Fail
+        Assert.AreEqual(70, lookup.Prefixes.Count)
+        Assert.AreEqual(2249, lookup.Units.Count)

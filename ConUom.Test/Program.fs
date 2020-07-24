@@ -6,7 +6,10 @@ module Program =
 
     [<EntryPoint>] 
     let main _ =
-        let lookup, msgOpt = Frink.parseFile "units.txt"
+        use client = new System.Net.WebClient()
+        let lookup, msgOpt =
+            client.DownloadString("https://frinklang.org/frinkdata/units.txt")
+                |> Frink.parse
         for (key, value) in lookup.Prefixes |> Map.toSeq do
             printfn "%s: %A" key value
         for (key, value) in lookup.Units |> Map.toSeq do
