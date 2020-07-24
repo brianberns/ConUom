@@ -5,8 +5,10 @@ open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
 open ConUom
 
+/// Sample calculations:
+/// https://frinklang.org/#SampleCalculations
 [<TestClass>]
-type TestClass () =
+type SampleCalculations () =
 
     let centi = 1N/ 100N
     let milli = 1N/1000N
@@ -119,7 +121,10 @@ type TestClass () =
 
         Assert.AreEqual(
             10.83279809499848,
-            (5 @ one) * (12 @ floz) * junglejuice => !@beer |> mfloat)
+            5 * (12 @ floz) * junglejuice => !@beer |> mfloat)
+
+[<TestClass>]
+type Parser () =
 
     [<TestMethod>]
     member __.ParsePlanckMass() =
@@ -206,10 +211,38 @@ lightyear := c (365 + 1/4) day"
 
     [<TestMethod>]
     member __.ParseUrl() =
+
         use client = new System.Net.WebClient()
         let lookup, msgOpt =
             client.DownloadString("https://frinklang.org/frinkdata/units.txt")
                 |> Frink.parse
         msgOpt |> Option.iter Assert.Fail
-        Assert.AreEqual(70, lookup.Prefixes.Count)
-        Assert.AreEqual(2249, lookup.Units.Count)
+
+        let liter = lookup?liter
+        let percent = lookup?percent
+        let floz = lookup?floz
+        let gal = lookup?gal
+        let water = lookup?water
+        let alcohol = lookup?alcohol
+        let proof = lookup?proof
+
+        let mfloat meas = meas.Value |> float
+
+        let beer = (12 @ floz) * (3.2m @ percent) * (water/alcohol).Scale
+        let magnum = 1.5m @ liter
+        Assert.AreEqual(
+            14.074492562524341,
+            magnum * (13.5m @ percent) => !@beer |> mfloat)
+
+        let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
+        Assert.AreEqual(
+            8.78372074090843481138500000,
+            junglejuice => percent |> mfloat)
+
+        Assert.AreEqual(
+            10.83279809499848,
+            5 * (12 @ floz) * junglejuice => !@beer |> mfloat)
+
+        Assert.ThrowsException(
+            Action(fun () -> lookup?moo |> ignore))
+                |> ignore

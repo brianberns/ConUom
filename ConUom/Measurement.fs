@@ -46,28 +46,10 @@ module Measurement =
             (measA.Value / measB.Value)
             (Unit.div measA.Unit measB.Unit)
 
-type Measurement with
-
-    /// Multiples two measurements.
-    static member (*)(measA, measB) =
-        Measurement.mult measA measB
-
-    /// Divides one measurement by another.
-    static member (/)(measA, measB) =
-        Measurement.div measA measB
-
-    /// Converts the given measurement to the given unit.
-    static member (=>)(meas, unit) =
-        Measurement.convert unit meas
-
-    /// Creates a unit from the given measurement.
-    static member (!@)(meas) =
-        meas.Unit * meas.Value
-
 /// https://stackoverflow.com/questions/2812084/overload-operator-in-f/2812306#2812306
 /// http://nut-cracker.azurewebsites.net/blog/2011/10/05/inlinefun/
 
-/// Measurement creation operator.
+/// Measurement creation operator. E.g. 12 @ inches.
 type MeasurementExt =
     | MeasurementExt
 
@@ -98,3 +80,57 @@ module MeasurementExt =
     /// Creates a measurement.
     let inline (@) a b =
         (a &% MeasurementExt) b
+
+type Measurement with
+
+    /// Multiples two measurements.
+    static member (*)(measA, measB) =
+        Measurement.mult measA measB
+
+    /// Scales a measurement.
+    static member(*)(value : int, meas) =
+        Measurement.mult (value @ Unit.one) meas
+
+    /// Scales a measurement.
+    static member(*)(value : decimal, meas) =
+        Measurement.mult (value @ Unit.one) meas
+
+    /// Scales a measurement.
+    static member(*)(value : BigRational, meas) =
+        Measurement.mult (value @ Unit.one) meas
+
+    /// Scales a measurement.
+    static member(*)(meas, value : int) =
+        Measurement.mult meas (value @ Unit.one)
+
+    /// Scales a measurement.
+    static member(*)(meas, value : decimal) =
+        Measurement.mult meas (value @ Unit.one)
+
+    /// Scales a measurement.
+    static member(*)(meas, value : BigRational) =
+        Measurement.mult meas (value @ Unit.one)
+
+    /// Divides one measurement by another.
+    static member (/)(measA, measB) =
+        Measurement.div measA measB
+
+    /// Scales a measurement.
+    static member(/)(meas, value : int) =
+        Measurement.div meas (value @ Unit.one)
+
+    /// Scales a measurement.
+    static member(/)(meas, value : decimal) =
+        Measurement.div meas (value @ Unit.one)
+
+    /// Scales a measurement.
+    static member(/)(meas, value : BigRational) =
+        Measurement.div meas (value @ Unit.one)
+
+    /// Converts the given measurement to the given unit.
+    static member (=>)(meas, unit) =
+        Measurement.convert unit meas
+
+    /// Creates a unit from the given measurement.
+    static member (!@)(meas) =
+        meas.Unit * meas.Value

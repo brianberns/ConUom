@@ -543,3 +543,13 @@ module Frink =
     /// Parses the given Frink file.
     let parseFile path =
         File.ReadAllText path |> parse
+
+[<AutoOpen>]
+module FrinkAutoOpen =
+
+    /// Dynamic unit lookup.
+    let (?) lookup name =
+        lookup
+            |> UnitLookup.tryFindUnit name
+            |> Option.defaultWith (fun () ->
+                failwithf "No such unit: %s" name)
