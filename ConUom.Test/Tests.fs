@@ -186,3 +186,20 @@ age_of_universe = 1/hubble_constant"
         Assert.AreEqual(
             set [ BaseUnit.create "time" "s", 1 ],
             unit |> Unit.baseUnits)
+
+    [<TestMethod>]
+    member __.ParseLightyear() =
+        let lookup, msgOpt = Frink.parse "
+length =!= m
+time =!= s
+c := 299792458 m/s
+min := 60 s
+hr := 60 min
+day := 24 hr
+lightyear := c (365 + 1/4) day"
+        msgOpt |> Option.iter Assert.Fail
+        let unit = lookup.Units.["lightyear"]
+        Assert.AreEqual(9460730472580800N, unit.Scale)
+        Assert.AreEqual(
+            set [ BaseUnit.create "length" "m", 1 ],
+            unit |> Unit.baseUnits)

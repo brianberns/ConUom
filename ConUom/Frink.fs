@@ -218,11 +218,7 @@ module private FrinkParser =
 
         /// Parses a dimensionless unit.
         let parseDimensionless =
-            choice [
-                skipChar '+' >>% Unit.one
-                skipChar '-' >>% (-1 * Unit.one)
-                BigRational.parse |>> Unit.fromScale
-            ]
+            BigRational.parse |>> Unit.fromScale
 
         /// Parses a term in an expression.
         let parseTerm =
@@ -268,20 +264,56 @@ module private FrinkParser =
         /// Parses a term followed by a (possibly implicit) power.
         /// E.g. "m^2".
         let parseTermPower =
-            (acceptPower parseTerm)
+            acceptPower parseTerm
 
+        /// Backtracks if the given parser fails or if its result doesn’t
+        /// satisfy a predicate function. Based on:
+        /// https://www.quanttec.com/fparsec/users-guide/looking-ahead-and-backtracking.html#parser-predicates
+        let resultSatisfies predicate (p: Parser<_,_>) : Parser<_,_> =
+            fun stream ->
+                let state = stream.State
+                let reply = p stream
+                if reply.Status <> Ok then
+                    stream.BacktrackTo(state)
+                    reply
+                elif predicate reply.Result then
+                    reply
+                else
+                    stream.BacktrackTo(state) // backtrack to beginning
+                    Reply(Error, NoErrorMessages)
+
+        /// Parses 2 or more occurrences.
+        let require2 =
+            resultSatisfies (fun items ->
+                List.length items >= 2)
+
+        /// Parses two or more occurrences.
+        let sepBy2 p sep =
+            sepBy1 p sep |> require2
+
+        /// Parses two or more occurrences.
+        let many2 p =
+            many1 p |> require2
+
+        /// Parses the sum of one or more units.
+        let parseUnitSum parseUnit =
+            let skipOp =
+                spaces >>. skipChar '+' .>> spaces
+            sepBy2 parseUnit skipOp
+                |>> List.reduce (+)
+            
         /// Parses the product of one or more units.
         let parseUnitProduct parseUnit =
-
-            let skip =
-                parse {
-                    do! spaces
-                    do! optional (skipChar '*')
-                    do! spaces
-                }
-
-            many1 (parseUnit .>> skip)   // note: consumes trailing spaces
+            let skipOp =
+                spaces
+                    >>. optional (skipChar '*')
+                    .>> spaces
+            many2 (parseUnit .>> skipOp)   // note: consumes trailing spaces
                 |>> List.fold (*) Unit.one
+
+        /// Parses the sum of one or more terms. E.g. "(365 + 1/4)".
+        let parseTermSum =
+            parseUnitSum parseTerm
 
         /// Parses the product of one or more term-powers. E.g. "m s^-1".
         let parseTermPowerProduct =
@@ -291,7 +323,10 @@ module private FrinkParser =
         /// or "kg", but not "m s^-1".
         let parseQuotientable =
             choice [
-                parseParenthesized parseTermPowerProduct
+                choice [
+                    parseTermPowerProduct
+                    parseTermSum
+                ] |> parseParenthesized
                 parseTermPower
             ]
 
@@ -322,13 +357,35 @@ module private FrinkParser =
 
         /// Parses a product. E.g. "1200/3937 m/ft".
         let parseProduct =
-            parseUnitProduct parseMultiplicand
+            choice [
+                parseUnitProduct parseMultiplicand
+                parseMultiplicand
+            ]
+
+        /// Parses a potentially signed unit.
+        let acceptSigned parser =
+            parse {
+                let! charOpt = opt (anyOf [ '-'; '+' ] .>> spaces)
+                let sign =
+                    if charOpt = Some '-' then -1N
+                    else 1N
+                let! unit = parser
+                return Unit.(*)(sign, unit)
+            }
+
+        /// Parses a sum. E.g. "26 miles + 385 yards".
+        let parseSum =
+            choice [
+                parseUnitSum parseProduct
+                parseProduct
+            ]
 
         /// Parses an expression.
         let parse =
-            parseProduct
+            parseSum
                 |> acceptParenthesized
                 |> acceptPower
+                |> acceptSigned
 
     module Prefix =
 
@@ -451,7 +508,9 @@ module private FrinkParser =
 
 module Frink =
 
-    /// Parses the given Frink declarations.
+    /// Parses the given Frink declarations. Note that this parser
+    /// is just good enough to parse Frink's standard units.txt
+    /// file, but is not a general-purpose Frink parser.
     let parse str =
         let parser = FrinkParser.consumeDecls .>> eof   // force consumption of entire string
         let str = if isNull str then "" else str
