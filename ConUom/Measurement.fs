@@ -26,10 +26,6 @@ module Measurement =
             Unit = unit
         }
 
-    /// Answers the given measurement's value as a floating point number.
-    let float meas =
-        float meas.Value
-
     /// Converts the given measurement to the given unit.
     let convert unit meas =
         if unit.BaseMap <> meas.Unit.BaseMap then

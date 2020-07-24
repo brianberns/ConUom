@@ -38,7 +38,7 @@ type TestClass () =
     let water = 1 @ g/cc
     let alcohol = 0.7893m @ g/cc
 
-    let mfloat = Measurement.float
+    let mfloat meas = meas.Value |> float
 
     [<TestMethod>]
     member __.FromDecimal() =
