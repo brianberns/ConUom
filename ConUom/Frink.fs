@@ -257,7 +257,7 @@ module private FrinkParser =
             } |> attempt
 
         /// Accepts (but doesn't require) a power after the given parser.
-        let inline acceptPower<'t when 't : (static member Pow : 't * BigRational -> 't)> (parser : Parser<'t, _>) =
+        let acceptPower parser =
             parse {
                 let! value = parser
                 do! spaces
