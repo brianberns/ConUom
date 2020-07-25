@@ -21,7 +21,11 @@ var ft = 12 * inch;
 var yd = 3 * ft;
 var sqyd = yd ^ 2;
 ```
-Now lets make some measurements.
+Note that all of the above values are of type `Unit`, and they're all based on the . Now let's to measure out exactly 8 square yards:
+```csharp
+var areaSqYd = sqyd.Measure(8);
+```
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE0MTkyOTY0M119
+eyJoaXN0b3J5IjpbLTE2Nzg5MjM3MDVdfQ==
 -->
