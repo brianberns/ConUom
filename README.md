@@ -44,10 +44,16 @@ For example, MIT's favorite unit of length is the "[smoot](https://en.wikipedia.
 ```csharp
 var smoot = lookup["smoot"];
 ```
-The school's radio station, WMBR, broadcasts at 88.1 MHz, which has base units of cycles per second:
+The school's radio station, WMBR, broadcasts at a frequency of 88.1 MHz:
 ```csharp
+var wmbr = lookup["megahertz"].Measure(88.1m);```
+We can convert frequency to wavelength using the speed of light:
+```csharp
+            var c = lookup["c"].Measure(1);                       // speed of light (as a measurement)
+            var wmbr = lookup["megahertz"].Measure(88.1m);        
+            var nSmoots = (c / wmbr).ConvertTo(smoot);            // wavelength of WMBR in smoots
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTI1NTU0MzM4MSw2NzYxNzc0NDUsOTUzOD
-Y0MzA4XX0=
+eyJoaXN0b3J5IjpbLTE5ODc0ODY1NjEsNjc2MTc3NDQ1LDk1Mz
+g2NDMwOF19
 -->
