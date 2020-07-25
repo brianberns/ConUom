@@ -9,7 +9,12 @@ We can then derive new units by scaling exiting units up or down. For example, a
 ```csharp
 var cm = 0.01m * m;
 ```
-Note that the `m` at the end of `0.01m` indicates a fixed-point decimal literal (rather than floating-point). We use fixed-point to avoid rounding 
+Note that the `m` at the end of `0.01m` indicates a fixed-point decimal literal (rather than floating-point). We use exact decimals to avoid rounding errors.
+
+We can convert from metric to U.S. units by defining the inch as exactly 2.54 centimeters:
+```csharp
+var inch = 2.54m * cm;
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjcxNTc3MTU5XX0=
+eyJoaXN0b3J5IjpbMTM0NjQ4MTg2N119
 -->
