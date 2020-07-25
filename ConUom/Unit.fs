@@ -208,6 +208,7 @@ type Unit private (baseMap, scale) =
 [<AutoOpen>]
 module UnitExt =
 
-    /// Raises a unit to an integer power.
+    /// Raises a unit to an integer power. (Note that this blocks
+    /// use of ^ for string concatenation.)
     let (^) (unit : Unit) (power : int) =
         unit ** power
