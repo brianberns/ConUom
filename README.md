@@ -1,6 +1,6 @@
 # ConUom
-ConUom allows you to define and convert between units of measure in C# or F#.
-## Example
+ConUom allows you to define units of measure and convert between units of measure in C# or F#.
+## C# example
 Let's start by defining the meter as a base unit of length:
 ```csharp
 var m = new Unit("Length", "m");
@@ -25,7 +25,12 @@ Note that all of the above values are of type `Unit`, and they're all based on t
 ```csharp
 var areaSqYd = sqyd.Measure(8);
 ```
-This value has type `Measurement`. How many square meters are in 8 square yards? We can find out by converting 
+This value has type `Measurement`. How many square meters are in 8 square yards? We can find out by converting units:
+```csharp
+var areaSqM = areaSqYd.ConvertTo(m ^ 2);
+Console.WriteLine($"{areaSqYd.Value} square yards = {(double)areaSqM.Value} square meters");
+// Output: 8 square yards = 6.68901888 square meters
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTczMjIxNDI4OV19
+eyJoaXN0b3J5IjpbMTk2Mzg4MTk3OV19
 -->
