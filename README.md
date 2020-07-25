@@ -1,5 +1,5 @@
 # ConUom
-ConUom allows you to define units of measure and then convert between them in C# or F#.
+ConUom is a .NET Core library that allows you to define units of measure and then convert between them in C# or F#.
 ## C# example
 Let's start by defining the meter as a base unit of length:
 ```csharp
@@ -32,6 +32,35 @@ var areaSqM = areaSqYd.ConvertTo(m ^ 2);
 Console.WriteLine($"{areaSqYd.Value} square yards = {(double)areaSqM.Value} square meters");
 // Output: 8 square yards = 6.68901888 square meters
 ```
+## Using standard units
+Instead of defining our own units from scratch, we can download and use units defined in the [Frink](https://frinklang.org/frinkdata/units.txt) language:
+```csharp
+using var client = new WebClient();
+var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
+var success = Frink.TryParse(str, out UnitLookup lookup);
+Assert.IsTrue(success);
+```
+For example, MIT's favorite unit of length is the "[smoot](https://en.wikipedia.org/wiki/Smoot)". We can use Frink's definition like this:
+```csharp
+var smoot = lookup["smoot"];
+```
+The school's radio station, WMBR, broadcasts at a frequency of 88.1 MHz:
+```csharp
+var wmbr = lookup["megahertz"].Measure(88.1m);
+```
+We can convert this frequency to a wavelength using the speed of light:
+```csharp
+var c = lookup["c"].Measure(1);
+var wavelength = c / wmbr;
+```
+So, how long is WMBR's wavelength in smoots? That's easy to calculate:
+```csharp
+var nSmoots = wavelength.ConvertTo(smoot);
+Console.WriteLine((double)nSmoots.Value);
+// Output: 1.999568447856973
+```
+ Almost exactly 2!
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjc2MTc3NDQ1LDk1Mzg2NDMwOF19
+eyJoaXN0b3J5IjpbLTE5OTAzMTUxMDUsLTY1NTk3MTYzNSw2Nz
+YxNzc0NDUsOTUzODY0MzA4XX0=
 -->
