@@ -51,9 +51,10 @@ namespace ConUom.CS.Test
             Assert.IsTrue(success);
 
             var smoot = lookup["smoot"];                          // height of Oliver Smoot
-            var c = lookup["c"].Measure(1);                       // speed of light (as a measurement)
             var wmbr = lookup["megahertz"].Measure(88.1m);        // frequency of radio station WMBR
-            var nSmoots = (c / wmbr).ConvertTo(smoot);            // wavelength of WMBR in smoots
+            var c = lookup["c"].Measure(1);                       // speed of light (as a measurement)
+            var wavelength = c / wmbr;                            // WMBR's wavelength
+            var nSmoots = wavelength.ConvertTo(smoot);            // wavelength of WMBR in smoots
             Assert.AreEqual(2.0, (double)nSmoots.Value, 0.001);   // WMBR wavelength = 2 smoots!
         }
     }
