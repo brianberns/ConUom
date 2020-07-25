@@ -1,5 +1,5 @@
 # ConUom
-ConUom allows you to define units of measure and then convert between them in C# or F#.
+ConUom is a .NET Core library that allows you to define units of measure and then convert between them in C# or F#.
 ## C# example
 Let's start by defining the meter as a base unit of length:
 ```csharp
@@ -53,13 +53,14 @@ We can convert this frequency to a wavelength using the speed of light:
 var c = lookup["c"].Measure(1);
 var wavelength = c / wmbr;
 ```
-So, how long is WMBR's wavelength in smoots?
+So, how long is WMBR's wavelength in smoots? That's easy to calculate:
 ```csharp
+var nSmoots = wavelength.ConvertTo(smoot);
 Console.WriteLine((double)nSmoots.Value);
 // Output: 1.999568447856973
 ```
  Almost exactly 2!
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjEwODQxODA3OCw2NzYxNzc0NDUsOTUzOD
+eyJoaXN0b3J5IjpbLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzOD
 Y0MzA4XX0=
 -->
