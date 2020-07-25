@@ -44,10 +44,10 @@ For example, MIT's favorite unit of length is the "[smoot](https://en.wikipedia.
 ```csharp
 var smoot = lookup["smoot"];
 ```
-The school's radio station, WMBR, broadcasts at 88.1 MHz, which has a base unit of cycles per second:
+The school's radio station, WMBR, broadcasts at 88.1 MHz, which has base units of cycles per second:
 ```csharp
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEzMDcwMzAyMzMsNjc2MTc3NDQ1LDk1Mz
-g2NDMwOF19
+eyJoaXN0b3J5IjpbMTI1NTU0MzM4MSw2NzYxNzc0NDUsOTUzOD
+Y0MzA4XX0=
 -->
