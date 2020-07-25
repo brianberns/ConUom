@@ -53,8 +53,13 @@ We can convert this frequency to a wavelength using the speed of light:
 var c = lookup["c"].Measure(1);
 var wavelength = c / wmbr;
 ```
-How long is WMBR's wavelength in smoots? Ex
+So, how long is WMBR's wavelength in smoots?
+```csharp
+Console.WriteLine((double)nSmoots.Value);
+// Output: 1.999568447856973
+```
+ Almost exactly 2!
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE2MTg0NzYwMTIsNjc2MTc3NDQ1LDk1Mz
-g2NDMwOF19
+eyJoaXN0b3J5IjpbMjEwODQxODA3OCw2NzYxNzc0NDUsOTUzOD
+Y0MzA4XX0=
 -->
