@@ -1,7 +1,6 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MathNet.Numerics;
-using ConUom;
 
 namespace ConUom.CS.Test
 {
@@ -21,6 +20,7 @@ namespace ConUom.CS.Test
             var centi = BigRational.FromIntFraction(1, 100);
             var m = new Unit("Length", "m");
             var cm = centi * m;
+            var sqm = m ^ 2;
 
             /*
             AssertEq(

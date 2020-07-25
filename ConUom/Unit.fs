@@ -205,6 +205,10 @@ type Unit private (baseMap, scale) =
     static member Pow(unit, power : int) =
         unit ** (BigRational.FromInt power)
 
+    /// Raises a unit to an integer power. This can be invoked via ^ from C#.
+    static member op_ExclusiveOr(unit : Unit, power : int) =
+        unit ** (BigRational.FromInt power)
+
 [<AutoOpen>]
 module UnitExt =
 
