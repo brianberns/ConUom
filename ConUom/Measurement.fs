@@ -81,6 +81,18 @@ type Measurement(value, unit) =
     static member(/)(meas : Measurement, value) =
         meas / (value |> BigRational.FromDecimal)
 
+    /// Inverts a measurement.
+    static member(/)(value : BigRational, meas : Measurement) =
+        Measurement(value, Unit.One) / meas
+
+    /// Inverts a measurement.
+    static member(/)(value, meas : Measurement) =
+        meas / (value |> BigRational.FromInt)
+
+    /// Inverts a measurement.
+    static member(/)(value, meas : Measurement) =
+        meas / (value |> BigRational.FromDecimal)
+
     /// Converts the given measurement to the given unit.
     static member (=>)(meas : Measurement, unit) =
         meas.ConvertTo(unit)

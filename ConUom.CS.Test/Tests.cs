@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,35 +42,19 @@ namespace ConUom.CS.Test
         }
 
         [TestMethod]
-        public void ParseUrl()
+        public void WmbrInSmoots()
         {
-            using var client = new System.Net.WebClient();
+            // download and parse standard units
+            using var client = new WebClient();
             var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
             var success = Frink.TryParse(str, out UnitLookup lookup);
             Assert.IsTrue(success);
 
-            var liter = lookup["liter"];
-            var percent = lookup["percent"];
-            var floz = lookup["floz"];
-            var gal = lookup["gal"];
-            var water = lookup["water"];
-            var alcohol = lookup["alcohol"];
-            var proof = lookup["proof"];
-
-            var beer = (12 * floz) * (3.2m * percent) * (water / alcohol);
-            var magnum = liter.Measure(1.5m) * percent.Measure(13.5m);
-            Assert.AreEqual(
-                14.074492562524341,
-                (double)magnum.ConvertTo(beer).Value);
-
-            var junglejuice = liter.Measure(1.75m) * proof.Measure(190) / gal.Measure(5);
-            Assert.AreEqual(
-                8.78372074090843481138500000,
-                (double)junglejuice.ConvertTo(percent).Value);
-
-            Assert.AreEqual(
-                10.83279809499848,
-                (double)(5 * floz.Measure(12) * junglejuice).ConvertTo(beer).Value);
+            var smoot = lookup["smoot"];                          // height of Oliver Smoot
+            var c = lookup["c"].Measure(1);                       // speed of light (as a measurement)
+            var wmbr = lookup["megahertz"].Measure(88.1m);        // frequency of radio station WMBR
+            var nSmoots = (c / wmbr).ConvertTo(smoot);            // wavelength of WMBR in smoots
+            Assert.AreEqual(2.0, (double)nSmoots.Value, 0.001);   // WMBR wavelength = 2 smoots!
         }
     }
 }
