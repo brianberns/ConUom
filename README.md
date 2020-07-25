@@ -40,8 +40,14 @@ var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
 var success = Frink.TryParse(str, out UnitLookup lookup);
 Assert.IsTrue(success);
 ```
-For example, MIT's favorite unit of length is the "[smoot](https://en.wikipedia.org/wiki/Smoot)", and the school's radio station, WMBR, broadcast
+For example, MIT's favorite unit of length is the "[smoot](https://en.wikipedia.org/wiki/Smoot)". We can use Frink's definition like this:
+```csharp
+var smoot = lookup["smoot"];
+```
+The school's radio station, WMBR, broadcasts at 88.1 MHz, which has a base unit of cycles per second:
+```csharp
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTQ2OTMzODU0Miw2NzYxNzc0NDUsOTUzOD
-Y0MzA4XX0=
+eyJoaXN0b3J5IjpbLTEzMDcwMzAyMzMsNjc2MTc3NDQ1LDk1Mz
+g2NDMwOF19
 -->
