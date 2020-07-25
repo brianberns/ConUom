@@ -21,11 +21,11 @@ var ft = 12 * inch;
 var yd = 3 * ft;
 var sqyd = yd ^ 2;
 ```
-Note that all of the above values are of type `Unit`, and they're all based on the . Now let's to measure out exactly 8 square yards:
+Note that all of the above values are of type `Unit`, and they're all based on the Length dimension we defined at the top. Now let's to measure out exactly 8 square yards:
 ```csharp
 var areaSqYd = sqyd.Measure(8);
 ```
-
+This value has type `Measurement`. How many square meters are in 8 square yards? We can find out by converting 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE2Nzg5MjM3MDVdfQ==
+eyJoaXN0b3J5IjpbLTczMjIxNDI4OV19
 -->
