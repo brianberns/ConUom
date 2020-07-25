@@ -33,10 +33,15 @@ Console.WriteLine($"{areaSqYd.Value} square yards = {(double)areaSqM.Value} squa
 // Output: 8 square yards = 6.68901888 square meters
 ```
 ## Using standard units
-Instead of defining our own units from scratch, we can download and use units defined in the [Frink]([https://frinklang.org/](https://frinklang.org/)) language:
-
-
+Instead of defining our own units from scratch, we can download and use units defined in the [Frink](https://frinklang.org/frinkdata/units.txt) language:
+```csharp
+using var client = new WebClient();
+var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
+var success = Frink.TryParse(str, out UnitLookup lookup);
+Assert.IsTrue(success);
+```
+For example, M.I.T. 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ5OTY1ODkxNyw2NzYxNzc0NDUsOTUzOD
+eyJoaXN0b3J5IjpbLTQ4MDE3MDc5MCw2NzYxNzc0NDUsOTUzOD
 Y0MzA4XX0=
 -->
