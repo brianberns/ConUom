@@ -46,7 +46,7 @@ var smoot = lookup["smoot"];
 ```
 The school's radio station, WMBR, broadcasts at a frequency of 88.1 MHz:
 ```csharp
-var wmbr = lookup["megahertz"].Measure(88.1m);```
+var wmbr = lookup["megahertz"].Measure(88.1m);
 ```
 We can convert this frequency to a wavelength using the speed of light:
 ```csharp
@@ -61,6 +61,6 @@ Console.WriteLine((double)nSmoots.Value);
 ```
  Almost exactly 2!
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzOD
-Y0MzA4XX0=
+eyJoaXN0b3J5IjpbLTE5OTAzMTUxMDUsLTY1NTk3MTYzNSw2Nz
+YxNzc0NDUsOTUzODY0MzA4XX0=
 -->
