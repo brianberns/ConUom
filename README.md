@@ -47,12 +47,14 @@ var smoot = lookup["smoot"];
 The school's radio station, WMBR, broadcasts at a frequency of 88.1 MHz:
 ```csharp
 var wmbr = lookup["megahertz"].Measure(88.1m);```
-We can convert frequency to wavelength using the speed of light:
+```
+We can convert this frequency to a wavelength using the speed of light:
 ```csharp
 var c = lookup["c"].Measure(1);
 var wavelength = c / wmbr;
 ```
+How long is WMBR's wavelength in smoots? Ex
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTMwNjcxNzU3OCw2NzYxNzc0NDUsOTUzOD
-Y0MzA4XX0=
+eyJoaXN0b3J5IjpbLTE2MTg0NzYwMTIsNjc2MTc3NDQ1LDk1Mz
+g2NDMwOF19
 -->
