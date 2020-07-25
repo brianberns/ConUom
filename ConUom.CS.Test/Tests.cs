@@ -20,16 +20,14 @@ namespace ConUom.CS.Test
             var centi = BigRational.FromIntFraction(1, 100);
             var m = new Unit("Length", "m");
             var cm = centi * m;
-            var sqm = m ^ 2;
+            var inch = 2.54m * cm;
 
-            /*
             AssertEq(
-                5.08m @ cm,
-                (2 @ inch) => cm)
+                cm.Measure(5.08m),
+                inch.Measure(2).Convert(cm));
             AssertEq(
-                2 @ inch,
-                (5.08m @ cm) => inch)
-            */
+                inch.Measure(2),
+                cm.Measure(5.08m).Convert(inch));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace ConUom
 
+open System.Runtime.CompilerServices
 open MathNet.Numerics
 
 /// An individual measurement. E.g. 3 lbs.
@@ -122,3 +123,22 @@ module MeasurementExt =
     /// Creates a measurement.
     let inline (@) a b =
         (a &% MeasurementExt) b
+
+/// Extensions for use from C#.
+[<Extension>]
+type MeasurementCsExt =
+
+    /// Creates a measurement.
+    [<Extension>]
+    static member Measure(unit, value) =
+        Measurement(value, unit)
+
+    /// Creates a measurement.
+    [<Extension>]
+    static member Measure(unit, value) =
+        Measurement(value |> BigRational.FromInt, unit)
+
+    /// Creates a measurement.
+    [<Extension>]
+    static member Measure(unit, value) =
+        Measurement(value |> BigRational.FromDecimal, unit)
