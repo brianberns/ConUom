@@ -24,7 +24,7 @@ type Measurement(value, unit) =
         meas.String
 
     /// Converts the given measurement to the given unit.
-    member meas.Convert(unit : Unit) =
+    member meas.ConvertTo(unit : Unit) =
         if unit.BaseMap <> meas.Unit.BaseMap then   // no direct collection equality
             failwithf "Can't convert '%A' to '%A'" meas.Unit unit
         let value =
@@ -83,7 +83,7 @@ type Measurement(value, unit) =
 
     /// Converts the given measurement to the given unit.
     static member (=>)(meas : Measurement, unit) =
-        meas.Convert(unit)
+        meas.ConvertTo(unit)
 
     /// Creates a unit from the given measurement.
     static member (!@)(meas : Measurement) =

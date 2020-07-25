@@ -2,6 +2,8 @@
 
 open System
 open System.IO
+open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
 
 open MathNet.Numerics
 
@@ -17,15 +19,13 @@ type UnitLookup =
         Units : Map<string, Unit>
     }
 
-module UnitLookup =
-
     /// Tries to find the prefix with the given name.
-    let tryFindPrefix name lookup =
+    member lookup.TryFindPrefix(name)=
         lookup.Prefixes
             |> Map.tryFind name
 
     /// Tries to find the unit with the given name.
-    let tryFindUnit name lookup =
+    member lookup.TryFindUnit(name) =
 
         let tryFind name =
             lookup.Units
@@ -55,8 +55,16 @@ module UnitLookup =
 
                 // try a prefix instead
             |> Option.orElseWith (fun () ->
-                tryFindPrefix name lookup
+                lookup.TryFindPrefix(name)
                     |> Option.map Unit)
+
+    /// Tries to find the unit with the given name.
+    member lookup.Item
+        with get(name) =
+            let unitOpt = lookup.TryFindUnit(name)
+            match unitOpt with
+                | Some unit -> unit
+                | _ -> failwithf "No such unit: %s" name
 
 #if DEBUG
 [<AutoOpen>]
@@ -208,8 +216,8 @@ module private FrinkParser =
         let parseRef =
             parse {
                 let! name = identifier
-                let! lookup = getUserState
-                let unitOpt = lookup |> UnitLookup.tryFindUnit name
+                let! (lookup : UnitLookup) = getUserState
+                let unitOpt = lookup.TryFindUnit(name)
                 return!
                     match unitOpt with
                         | Some unit -> preturn unit
@@ -422,8 +430,8 @@ module private FrinkParser =
         let parseRef =
             parse {
                 let! name = identifier
-                let! lookup = getUserState
-                let scaleOpt = lookup |> UnitLookup.tryFindPrefix name
+                let! (lookup : UnitLookup) = getUserState
+                let scaleOpt = lookup.TryFindPrefix(name)
                 return!
                     match scaleOpt with
                         | Some scale -> preturn scale
@@ -548,8 +556,19 @@ module Frink =
 module FrinkAutoOpen =
 
     /// Dynamic unit lookup.
-    let (?) lookup name =
-        lookup
-            |> UnitLookup.tryFindUnit name
+    let (?) (lookup : UnitLookup) name =
+        lookup.TryFindUnit(name)
             |> Option.defaultWith (fun () ->
                 failwithf "No such unit: %s" name)
+
+/// C# API.
+type Frink =
+
+    /// Tries to parse the given Frink declarations.
+    static member TryParse(str, [<Out>] lookup : UnitLookup byref) =
+        let result, msgOpt = Frink.parse str
+        if msgOpt.IsNone then
+            lookup <- result
+            true
+        else
+            false
