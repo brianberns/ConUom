@@ -40,8 +40,8 @@ var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
 var success = Frink.TryParse(str, out UnitLookup lookup);
 Assert.IsTrue(success);
 ```
-For example, M.I.T. 
+For example, MIT's favorite unit of length is the "[smoot](https://en.wikipedia.org/wiki/Smoot)", and the school's radio station, WMBR, broadcast
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ4MDE3MDc5MCw2NzYxNzc0NDUsOTUzOD
+eyJoaXN0b3J5IjpbMTQ2OTMzODU0Miw2NzYxNzc0NDUsOTUzOD
 Y0MzA4XX0=
 -->
