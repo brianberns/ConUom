@@ -1,89 +1,95 @@
 ﻿namespace ConUom
 
 open System
+open System.Collections.Immutable
+
 open MathNet.Numerics
 
+/// A base unit used to measure a dimension.
+[<Struct>]
+type BaseUnit(dimension : string, name : string) =
+
+    /// Dimension measured by this base unit.
+    member __.Dimension = dimension
+
+    /// Name of this base unit.
+    member __.Name = name
+
 /// A unit of measurement.
-[<StructuredFormatDisplay("{Name}")>]
-type Unit =
-    {
-        /// Base units that this unit derives from. E.g. Units
-        /// of acceleration are based on: m^1, s^-2.
-        BaseMap : Map<BaseUnit, int (*power*)>
+[<StructuredFormatDisplay("{String}")>]
+type Unit private (baseMap, scale) =
 
-        /// Factor to convert from this unit to base units. E.g.
-        /// 1000x for km -> m.
-        Scale : BigRational
-    }
+    /// Creates a base unit.
+    new(dim, name) =
+        let baseMap = Map [ BaseUnit(dim, name), 1 ]
+        Unit(baseMap, 1N)
 
-    /// Name of this unit.
-    member this.Name =
-        let scaleStr = sprintf "%A" <| float this.Scale
-        if this.BaseMap.IsEmpty then
+    /// Creates a dimensionless unit of the given scale.
+    new(scale) =
+        Unit(Map.empty, scale)
+
+    /// Base units that this unit derives from. E.g. Units
+    /// of acceleration are based on: m^1, s^-2.
+    member internal __.BaseMap : Map<BaseUnit, int (*power*)> =
+        baseMap
+
+    /// Factor to convert from this unit to base units. E.g.
+    /// 1000x for km -> m.
+    member __.Scale : BigRational =
+        scale
+
+    /// Answers the given unit's set of base units.
+    member unit.BaseUnits =
+        unit.BaseMap
+            |> Map.toSeq
+            |> ImmutableHashSet.ToImmutableHashSet
+
+    /// Dimensionless unit of scale one.
+    static member One =
+        Unit(1N)
+
+    /// Display string.
+    member unit.String =
+        let scaleStr = sprintf "%A" <| float unit.Scale
+        if unit.BaseMap.IsEmpty then
             scaleStr
         else
             let units =
                 let names =
-                    this.BaseMap
-                        |> Map.toSeq
-                        |> Seq.map (fun (baseUnit, power) ->
+                    unit.BaseMap
+                        |> Seq.map (fun (KeyValue(baseUnit, power)) ->
                             let name = baseUnit.Name
                             if power = 1 then name
                             else sprintf "%s^%d" name power)
                 String.Join(" ", names)
-            if this.Scale = 1N then
+            if unit.Scale = 1N then
                 units
             else
                 sprintf "%s %s" scaleStr units
 
+    /// Display string.
+    override unit.ToString() =
+        unit.String
+
     /// Negates a unit.
-    static member(~-)(unit) =
-        { unit with Scale = -unit.Scale }
-
-module Unit =
-
-    /// Creates a base unit.
-    let createBase dim name =
-        {
-            BaseMap =  Map [ BaseUnit.create dim name, 1 ]
-            Scale = 1N
-        }
-
-    /// Creates a dimensionless unit of the given scale.
-    let fromScale scale =
-        {
-            BaseMap = Map.empty
-            Scale = scale
-        }
-
-    /// Dimensionless unit of scale one.
-    let one =
-        fromScale 1N
-
-    /// Answers the given unit's set of base units.
-    let baseUnits unit =
-        unit.BaseMap
-            |> Map.toSeq
-            |> Set
+    static member (~-)(unit : Unit) =
+        Unit(unit.BaseMap, -unit.Scale)
 
     /// Adds two units.
-    let add unitA unitB =
+    static member (+)(unitA : Unit, unitB : Unit) =
         if unitA.BaseMap <> unitB.BaseMap then
             failwithf "Can't add '%A' to '%A'" unitA unitB
-        {
-            unitA with
-                Scale = unitA.Scale + unitB.Scale
-        }
+        Unit(unitA.BaseMap, unitA.Scale + unitB.Scale)
 
     /// Subtracts one unit from another.
-    let sub unitA unitB =
-        add unitA (-unitB)
+    static member (-)(unitA : Unit, unitB : Unit) =
+        unitA + (-unitB)
 
     /// Multiplies two units.
-    let mult unitA unitB =
+    static member (*)(unitA : Unit, unitB : Unit) =
         let baseMap =
-            (unitA.BaseMap, unitB.BaseMap |> Map.toSeq)
-                ||> Seq.fold (fun baseMap (baseUnit, power) ->
+            (unitA.BaseMap, unitB.BaseMap)
+                ||> Seq.fold (fun baseMap (KeyValue(baseUnit, power)) ->
                     let oldPower =
                         baseMap
                             |> Map.tryFind baseUnit
@@ -100,38 +106,80 @@ module Unit =
                 |> Map.toSeq
                 |> Seq.map snd
                 |> Seq.forall ((<>) 0))
-        {
-            BaseMap = baseMap
-            Scale = unitA.Scale * unitB.Scale
-        }
+        Unit(baseMap, unitA.Scale * unitB.Scale)
 
-    /// Inverts a unit. E.g. ft^2 -> ft^-2.
-    let invert unit =
-        if unit.Scale = 0N then
-            failwithf "Can't invert unit: %A" unit
-        {
-            BaseMap =
-                unit
-                    |> baseUnits
+    /// Scales a unit.
+    static member (*)(unit, scale) =
+        unit * Unit(scale)
+
+    /// Scales a unit.
+    static member (*)(scale, unit) =
+        Unit(scale) * unit
+
+    /// Scales a unit.
+    static member (*)(unit, scale) =
+        unit * Unit(scale |> BigRational.FromInt)
+
+    /// Scales a unit.
+    static member (*)(scale, unit) =
+        Unit(scale |> BigRational.FromInt) * unit
+
+    /// Scales a unit.
+    static member (*)(unit, scale) =
+        unit * Unit(scale |> BigRational.FromDecimal)
+
+    /// Scales a unit.
+    static member (*)(scale, unit) =
+        Unit(scale |> BigRational.FromDecimal) * unit
+
+    /// Divides one unit by another.
+    static member(/)(unitA : Unit, unitB : Unit) =
+
+        /// Inverts a unit. E.g. ft^2 -> ft^-2.
+        let invert (unit : Unit) =
+            if unit.Scale = 0N then
+                failwithf "Can't invert unit: %A" unit
+            let baseMap =
+                unit.BaseUnits
                     |> Seq.map (fun (baseUnit, power) ->
                         baseUnit, -power)
                     |> Map
-            Scale = 1N / unit.Scale
-        }
+            Unit(baseMap, 1N / unit.Scale)
 
-    /// Divides one unit by another.
-    let div numUnit denUnit =
-        mult numUnit (invert denUnit)
+        unitA * (invert unitB)
+
+    /// Scales a unit.
+    static member (/)(unit, scale) =
+        unit / Unit(scale)
+
+    /// Scales a unit.
+    static member (/)(scale, unit) =
+        Unit(scale) / unit
+
+    /// Scales a unit.
+    static member (/)(unit, scale) =
+        unit / Unit(scale |> BigRational.FromInt)
+
+    /// Scales a unit.
+    static member (/)(scale, unit) =
+        Unit(scale |> BigRational.FromInt) / unit
+
+    /// Scales a unit.
+    static member (/)(unit, scale) =
+        unit / Unit(scale |> BigRational.FromDecimal)
+
+    /// Scales a unit.
+    static member (/)(scale, unit) =
+        Unit(scale |> BigRational.FromDecimal) / unit
 
     /// Raises a unit to a rational power.
-    let pow power unit =
+    static member Pow(unit : Unit, power) =
         if power = 0N then   // a^0 -> 1
-            one
+            Unit.One
         else
 
             let baseMap =
-                unit.BaseMap
-                    |> Map.toSeq
+                unit.BaseUnits
                     |> Seq.map (fun (baseUnit, oldPower) ->
                         assert(oldPower <> 0)
                         let newPower =   // (a^n)^m -> a^(n*m)
@@ -151,80 +199,7 @@ module Unit =
                         |> decimal
                         |> BigRational.FromDecimal
 
-            {
-                BaseMap = baseMap
-                Scale = scale
-            }
-
-type Unit with
-
-    /// Adds two units.
-    static member(+)(unitA, unitB) =
-        Unit.add unitA unitB
-
-    // Subtracts one unit from another.
-    static member(-)(unitA, unitB) =
-        Unit.sub unitA unitB
-
-    /// Multiplies two units.
-    static member (*)(unitA, unitB) =
-        Unit.mult unitA unitB
-
-    /// Scales a unit.
-    static member (*)(unit, scale) =
-        Unit.mult unit (Unit.fromScale scale)
-
-    /// Scales a unit.
-    static member (*)(scale, unit) =
-        Unit.mult (Unit.fromScale scale) unit
-
-    /// Scales a unit.
-    static member (*)(unit, scale) =
-        Unit.mult unit (scale |> BigRational.FromInt |> Unit.fromScale)
-
-    /// Scales a unit.
-    static member (*)(scale, unit) =
-        Unit.mult (scale |> BigRational.FromInt |> Unit.fromScale) unit
-
-    /// Scales a unit.
-    static member (*)(unit, scale) =
-        Unit.mult unit (scale |> BigRational.FromDecimal |> Unit.fromScale)
-
-    /// Scales a unit.
-    static member (*)(scale, unit) =
-        Unit.mult (scale |> BigRational.FromDecimal |> Unit.fromScale) unit
-
-    /// Divides one unit by another.
-    static member (/)(unitA, unitB) =
-        Unit.div unitA unitB
-
-    /// Scales a unit.
-    static member (/)(unit, scale) =
-        Unit.div unit (Unit.fromScale scale)
-
-    /// Scales a unit.
-    static member (/)(scale, unit) =
-        Unit.div (Unit.fromScale scale) unit
-
-    /// Scales a unit.
-    static member (/)(unit, scale) =
-        Unit.div unit (scale |> BigRational.FromInt |> Unit.fromScale)
-
-    /// Scales a unit.
-    static member (/)(scale, unit) =
-        Unit.div (scale |> BigRational.FromInt |> Unit.fromScale) unit
-
-    /// Scales a unit.
-    static member (/)(unit, scale) =
-        Unit.div unit (scale |> BigRational.FromDecimal |> Unit.fromScale)
-
-    /// Scales a unit.
-    static member (/)(scale, unit) =
-        Unit.div (scale |> BigRational.FromDecimal |> Unit.fromScale) unit
-
-    /// Raises a unit to a rational power. This is invoked via ** rather than ^.
-    static member Pow(unit, power) =
-        Unit.pow power unit
+            Unit(baseMap, scale)
 
     /// Raises a unit to an integer power. This is invoked via ** rather than ^.
     static member Pow(unit, power : int) =

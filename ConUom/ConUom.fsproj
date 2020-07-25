@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Compile Include="BigRational.fs" />
-    <Compile Include="BaseUnit.fs" />
     <Compile Include="Unit.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="Frink.fs" />

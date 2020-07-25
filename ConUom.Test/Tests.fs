@@ -1,6 +1,8 @@
 namespace ConUom.Test
 
 open System
+open System.Linq
+
 open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
 open ConUom
@@ -13,13 +15,13 @@ type SampleCalculations () =
     let centi = 1N/ 100N
     let milli = 1N/1000N
 
-    let one = Unit.one
+    let one = Unit.One
     let percent = centi * one
 
-    let m = Unit.createBase "Length" "m"
+    let m = Unit("Length", "m")
     let cm = centi * m
 
-    let kg = Unit.createBase "Mass" "kg"
+    let kg = Unit("Mass", "kg")
     let g = milli * kg
 
     let cc = 1N * (cm^3)
@@ -40,7 +42,12 @@ type SampleCalculations () =
     let water = 1 @ g/cc
     let alcohol = 0.7893m @ g/cc
 
-    let mfloat meas = meas.Value |> float
+    let assertEq(measA : Measurement, measB : Measurement) =
+        Assert.AreEqual(measA.Value, measB.Value)
+        Assert.IsTrue(measA.Unit.BaseUnits.SequenceEqual(measB.Unit.BaseUnits))
+        Assert.AreEqual(measA.Unit.Scale, measB.Unit.Scale)
+
+    let mfloat (meas : Measurement) = meas.Value |> float
 
     [<TestMethod>]
     member __.FromDecimal() =
@@ -66,35 +73,35 @@ type SampleCalculations () =
 
     [<TestMethod>]
     member __.Length() =
-        Assert.AreEqual(
+        assertEq(
             5.08m @ cm,
             (2 @ inch) => cm)
-        Assert.AreEqual(
+        assertEq(
             2 @ inch,
             (5.08m @ cm) => inch)
 
     [<TestMethod>]
     member __.Area() =
         let ratio = BigRational.FromDecimal(2.54m)
-        Assert.AreEqual(
+        assertEq(
             6N * ratio * ratio @ cm^2,
             (2 @ inch) * (3 @ inch) => cm^2)
-        Assert.AreEqual(
+        assertEq(
             (2 @ inch) * (3 @ inch),
             (6N * ratio * ratio @ cm^2) => inch^2)
 
     [<TestMethod>]
     member __.Volume() =
-        Assert.AreEqual(
+        assertEq(
             552960N/77N @ gal,
             (10 @ ft) * (12 @ ft) * (8 @ ft) => gal)
-        Assert.AreEqual(
+        assertEq(
             (10 @ ft) * (12 @ ft) * (8 @ ft),
             (552960N/77N @ gal) => ft^3)
 
     [<TestMethod>]
     member __.Density() =
-        Assert.AreEqual(
+        assertEq(
             1 @ g,
             (1 @ cm^3) * water)
         Assert.AreEqual(
@@ -126,6 +133,9 @@ type SampleCalculations () =
 [<TestClass>]
 type Parser () =
 
+    let assertEq(itemsA : seq<'t>, itemsB : seq<'t>) =
+        itemsA.SequenceEqual(itemsB)
+
     [<TestMethod>]
     member __.ParsePlanckMass() =
         let lookup, msgOpt = Frink.parse "length    =!= m // meter
@@ -140,9 +150,9 @@ planck_mass :=          (hbar c / G)^(1/2)"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["planck_mass"]
         Assert.AreEqual(2.1764343427179E-08, float unit.Scale)
-        Assert.AreEqual(
-            set [ BaseUnit.create "mass" "kg", 1],
-            unit |> Unit.baseUnits)
+        assertEq(
+            [ BaseUnit("mass", "kg"), 1],
+            unit.BaseUnits)
 
     [<TestMethod>]
     member __.ParsePower() =
@@ -154,13 +164,13 @@ m^2  kg s^-3 ||| power"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["power"]
         Assert.AreEqual(1N, unit.Scale)
-        Assert.AreEqual(
-            set [
-                BaseUnit.create "length" "m", 2
-                BaseUnit.create "mass" "kg", 1
-                BaseUnit.create "time" "s", -3
+        assertEq(
+            [
+                BaseUnit("length", "m"), 2
+                BaseUnit("mass", "kg"), 1
+                BaseUnit("time", "s"), -3
             ],
-            unit |> Unit.baseUnits)
+            unit.BaseUnits)
 
     [<TestMethod>]
     member __.ParseSurvey() =
@@ -188,9 +198,9 @@ age_of_universe = 1/hubble_constant"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["age_of_universe"]
         Assert.AreEqual(4.551146875355999E+17, float unit.Scale)
-        Assert.AreEqual(
-            set [ BaseUnit.create "time" "s", 1 ],
-            unit |> Unit.baseUnits)
+        assertEq(
+            [ BaseUnit("time", "s"), 1 ],
+            unit.BaseUnits)
 
     [<TestMethod>]
     member __.ParseLightyear() =
@@ -205,9 +215,9 @@ lightyear := c (365 + 1/4) day"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["lightyear"]
         Assert.AreEqual(9460730472580800N, unit.Scale)
-        Assert.AreEqual(
-            set [ BaseUnit.create "length" "m", 1 ],
-            unit |> Unit.baseUnits)
+        assertEq(
+            [ BaseUnit("length", "m"), 1 ],
+            unit.BaseUnits)
 
     [<TestMethod>]
     member __.ParseUrl() =
@@ -226,7 +236,7 @@ lightyear := c (365 + 1/4) day"
         let alcohol = lookup?alcohol
         let proof = lookup?proof
 
-        let mfloat meas = meas.Value |> float
+        let mfloat (meas : Measurement) = meas.Value |> float
 
         let beer = (12 * floz) * (3.2m * percent) * (water/alcohol)
         let magnum = 1.5m @ liter

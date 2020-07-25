@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ConUom", "ConUom\ConUom.fsproj", "{3ACD8199-28D5-4A20-955A-0D157AC938BE}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConUom", "ConUom\ConUom.fsproj", "{3ACD8199-28D5-4A20-955A-0D157AC938BE}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ConUom.Test", "ConUom.Test\ConUom.Test.fsproj", "{E8AEC18B-7A3B-4D88-9E89-B513C7FBCAFB}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConUom.Test", "ConUom.Test\ConUom.Test.fsproj", "{E8AEC18B-7A3B-4D88-9E89-B513C7FBCAFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConUom.CS.Test", "ConUom.CS.Test\ConUom.CS.Test.csproj", "{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{E8AEC18B-7A3B-4D88-9E89-B513C7FBCAFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8AEC18B-7A3B-4D88-9E89-B513C7FBCAFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8AEC18B-7A3B-4D88-9E89-B513C7FBCAFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

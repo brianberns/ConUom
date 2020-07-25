@@ -56,7 +56,7 @@ module UnitLookup =
                 // try a prefix instead
             |> Option.orElseWith (fun () ->
                 tryFindPrefix name lookup
-                    |> Option.map Unit.fromScale)
+                    |> Option.map Unit)
 
 #if DEBUG
 [<AutoOpen>]
@@ -218,7 +218,7 @@ module private FrinkParser =
 
         /// Parses a dimensionless unit.
         let parseDimensionless =
-            BigRational.parse |>> Unit.fromScale
+            BigRational.parse |>> Unit
 
         /// Parses a term in an expression.
         let parseTerm =
@@ -320,7 +320,7 @@ module private FrinkParser =
                     >>. optional (skipChar '*')
                     .>> spaces
             many2 (parseUnit .>> skipOp)   // note: consumes trailing spaces
-                |>> List.fold (*) Unit.one
+                |>> List.fold (*) Unit.One
 
         /// Parses the sum of one or more terms. E.g. "(365 + 1/4)".
         let parseTermSum =
@@ -412,7 +412,7 @@ module private FrinkParser =
         let parseScale =
             parse {
                 let! unit = Expr.parse
-                if unit.BaseMap.IsEmpty then
+                if unit.BaseUnits.IsEmpty then
                     return unit.Scale
                 else
                     return! failf "Not a scale: %A" unit
@@ -466,7 +466,7 @@ module private FrinkParser =
                 do! skipString "=!="
                 do! spaces
                 let! name = identifier
-                return name, Unit.createBase dim name
+                return name, Unit(dim, name)
             } |> attempt
 
         /// Parses the declaration of a derived unit.
@@ -533,7 +533,7 @@ module Frink =
                 Prefixes = Map.empty
                 Units =
                     Map [
-                        "<<IMAGINARY_UNIT>>", Unit.one   // ick
+                        "<<IMAGINARY_UNIT>>", Unit.One   // ick
                     ]
             }
         match runParserOnString parser lookup "" str with
