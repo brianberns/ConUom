@@ -23,7 +23,7 @@ type Measurement(value, unit) =
     override meas.ToString() =
         meas.String
 
-    /// Converts the given measurement to the given unit.
+    /// Converts this measurement to the given unit.
     member meas.ConvertTo(unit : Unit) =
         if unit.BaseMap <> meas.Unit.BaseMap then   // no direct collection equality
             failwithf "Can't convert '%A' to '%A'" meas.Unit unit
