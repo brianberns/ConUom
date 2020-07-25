@@ -7,7 +7,12 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConUom", "ConUom\ConUom.fsp
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConUom.Test", "ConUom.Test\ConUom.Test.fsproj", "{E8AEC18B-7A3B-4D88-9E89-B513C7FBCAFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConUom.CS.Test", "ConUom.CS.Test\ConUom.CS.Test.csproj", "{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConUom.CS.Test", "ConUom.CS.Test\ConUom.CS.Test.csproj", "{ECBC529C-2CEC-4131-BAE8-FE93EDD9CABE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A22F97A7-8157-44BF-B527-B07B95D4474E}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
