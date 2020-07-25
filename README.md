@@ -15,6 +15,13 @@ We can convert from metric to U.S. units by defining the inch as exactly 2.54 ce
 ```csharp
 var inch = 2.54m * cm;
 ```
+Of course, a foot is then 12 inches, and a yard is 3 feet. We can even define a square yard via the `^` operator:
+```csharp
+var ft = 12 * inch;
+var yd = 3 * ft;
+var sqyd = yd ^ 2;
+```
+Now lets make some measurements.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTM0NjQ4MTg2N119
+eyJoaXN0b3J5IjpbLTE0MTkyOTY0M119
 -->
