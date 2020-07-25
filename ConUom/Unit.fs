@@ -7,6 +7,7 @@ open MathNet.Numerics
 
 /// A base unit used to measure a dimension.
 [<Struct>]
+[<StructuredFormatDisplay("{Name}")>]
 type BaseUnit(dimension : string, name : string) =
 
     /// Dimension measured by this base unit.
@@ -14,6 +15,10 @@ type BaseUnit(dimension : string, name : string) =
 
     /// Name of this base unit.
     member __.Name = name
+
+    /// Display string.
+    override unit.ToString() =
+        unit.Name
 
 /// A unit of measurement.
 [<StructuredFormatDisplay("{String}")>]

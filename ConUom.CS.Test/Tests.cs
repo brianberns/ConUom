@@ -1,6 +1,7 @@
+using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MathNet.Numerics;
 
 namespace ConUom.CS.Test
 {
@@ -9,25 +10,34 @@ namespace ConUom.CS.Test
     {
         static void AssertEq(Measurement measA, Measurement measB)
         {
-            Assert.AreEqual(measA.Value, measB.Value);
+            Assert.AreEqual(measA.Value, measB.Value, $"{measA.Value} vs. {measB.Value}");
             Assert.IsTrue(measA.Unit.BaseUnits.SequenceEqual(measB.Unit.BaseUnits));
             Assert.AreEqual(measA.Unit.Scale, measB.Unit.Scale);
         }
 
         [TestMethod]
-        public void Length()
+        public void Area()
         {
-            var centi = BigRational.FromIntFraction(1, 100);
+            // define the meter as a base unit of length
             var m = new Unit("Length", "m");
-            var cm = centi * m;
+
+            // define an inch in terms of centimeters
+            var cm = 0.01m * m;
             var inch = 2.54m * cm;
 
-            AssertEq(
-                cm.Measure(5.08m),
-                inch.Measure(2).ConvertTo(cm));
-            AssertEq(
-                inch.Measure(2),
-                cm.Measure(5.08m).ConvertTo(inch));
+            // define a square yard in terms of inches
+            var ft = 12 * inch;
+            var yd = 3 * ft;
+            var sqyd = yd ^ 2;
+
+            // measure an area of 8 square yards
+            var areaSqYd = sqyd.Measure(8);
+
+            // how much is that area in square meters?
+            var areaSqM = areaSqYd.ConvertTo(m ^ 2);
+            Console.WriteLine($"{areaSqYd.Value} square yards = {(double)areaSqM.Value} square meters");   // Output: 8 square yards = 6.68901888 square meters
+            AssertEq((m ^ 2).Measure(6.68901888m), areaSqM);
+            AssertEq(areaSqYd, areaSqM.ConvertTo(yd ^ 2));
         }
 
         [TestMethod]
