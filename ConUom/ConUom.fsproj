@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Authors>Brian Berns</Authors>
+    <Company>Bernsrite Industries</Company>
+    <Description>ConUom is a .NET Core library that allows you to define units of measure and then convert between them in C# or F#.</Description>
+    <Copyright>Brian Berns</Copyright>
+    <RepositoryUrl>https://github.com/brianberns/ConUom</RepositoryUrl>
+    <PackageLicenseFile>License</PackageLicenseFile>
+    <PackageIcon>Icon.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -13,10 +20,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Icon.png" />
+    <None Include="Icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="License" />
     <Compile Include="BigRational.fs" />
     <Compile Include="Unit.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="Frink.fs" />
+    <None Include="License">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
