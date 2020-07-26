@@ -33,6 +33,14 @@ type Unit private (baseMap, scale) =
     new(scale) =
         Unit(Map.empty, scale)
 
+    /// Creates a dimensionless unit of the given scale.
+    new(scale) =
+        Unit(scale |> BigRational.FromInt)
+
+    /// Creates a dimensionless unit of the given scale.
+    new(scale) =
+        Unit(scale |> BigRational.FromDecimal)
+
     /// Base units that this unit derives from. E.g. Units
     /// of acceleration are based on: m^1, s^-2.
     member internal __.BaseMap : Map<BaseUnit, int (*power*)> =
@@ -114,28 +122,28 @@ type Unit private (baseMap, scale) =
         Unit(baseMap, unitA.Scale * unitB.Scale)
 
     /// Scales a unit.
-    static member (*)(unit, scale) =
+    static member (*)(unit, scale : BigRational) =
         unit * Unit(scale)
 
     /// Scales a unit.
-    static member (*)(scale, unit) =
+    static member (*)(scale : BigRational, unit) =
         Unit(scale) * unit
 
     /// Scales a unit.
-    static member (*)(unit, scale) =
-        unit * Unit(scale |> BigRational.FromInt)
+    static member (*)(unit, scale :int) =
+        unit * Unit(scale)
 
     /// Scales a unit.
-    static member (*)(scale, unit) =
-        Unit(scale |> BigRational.FromInt) * unit
+    static member (*)(scale : int, unit) =
+        Unit(scale) * unit
 
     /// Scales a unit.
-    static member (*)(unit, scale) =
-        unit * Unit(scale |> BigRational.FromDecimal)
+    static member (*)(unit, scale : decimal) =
+        unit * Unit(scale)
 
     /// Scales a unit.
-    static member (*)(scale, unit) =
-        Unit(scale |> BigRational.FromDecimal) * unit
+    static member (*)(scale : decimal, unit) =
+        Unit(scale) * unit
 
     /// Divides one unit by another.
     static member(/)(unitA : Unit, unitB : Unit) =
@@ -154,28 +162,28 @@ type Unit private (baseMap, scale) =
         unitA * (invert unitB)
 
     /// Scales a unit.
-    static member (/)(unit, scale) =
+    static member (/)(unit, scale : BigRational) =
         unit / Unit(scale)
 
     /// Scales a unit.
-    static member (/)(scale, unit) =
+    static member (/)(scale : BigRational, unit) =
         Unit(scale) / unit
 
     /// Scales a unit.
-    static member (/)(unit, scale) =
-        unit / Unit(scale |> BigRational.FromInt)
+    static member (/)(unit, scale : int) =
+        unit / Unit(scale)
 
     /// Scales a unit.
-    static member (/)(scale, unit) =
-        Unit(scale |> BigRational.FromInt) / unit
+    static member (/)(scale : int, unit) =
+        Unit(scale) / unit
 
     /// Scales a unit.
-    static member (/)(unit, scale) =
-        unit / Unit(scale |> BigRational.FromDecimal)
+    static member (/)(unit, scale : decimal) =
+        unit / Unit(scale)
 
     /// Scales a unit.
-    static member (/)(scale, unit) =
-        Unit(scale |> BigRational.FromDecimal) / unit
+    static member (/)(scale : decimal, unit) =
+        Unit(scale) / unit
 
     /// Raises a unit to a rational power.
     static member Pow(unit : Unit, power) =
