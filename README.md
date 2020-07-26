@@ -33,7 +33,7 @@ Console.WriteLine($"{areaSqYd.Value} square yards = {(double)areaSqM.Value} squa
 // Output: 8 square yards = 6.68901888 square meters
 ```
 ## Using standard units
-Instead of defining our own units from scratch, we can download and use units defined in the [Frink](https://frinklang.org/frinkdata/units.txt) language:
+Instead of defining our own units from scratch, we can download a large collection of standardized units maintained by [Frink](https://frinklang.org/frinkdata/units.txt):
 ```csharp
 using var client = new WebClient();
 var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
@@ -60,7 +60,36 @@ Console.WriteLine((double)nSmoots.Value);
 // Output: 1.999568447856973
 ```
  Almost exactly 2!
+## F# example
+ConUom is written in F# and there are several advantages to using its F# API as well. To start with, we can parse the Frink data file, just like in C#:
+```fsharp
+use client = new WebClient()
+let lookup, msgOpt =
+    client.DownloadString("https://frinklang.org/frinkdata/units.txt")
+        |> Frink.parse
+msgOpt |> Option.iter Assert.Fail
+```
+Note that this version of the parser returns an `Option<string>` that contains an error message if the parse fails, in addition to the same `UnitLookup` we saw earlier.
+This lookup can then be accessed using F#'s dynamic `?` operator:
+```fsharp
+let km = lookup?km
+let megaparsec = lookup?megaparsec
+let s = lookup?s
+let gigayear = lookup?gigayear   // billions of years
+```
+Note that we can look up "gigayear" even though it is not explicitly defined in the Frink file, because "giga" is a known prefix (meaning 1 billion) and "year" is a known unit.
+Let's use these units to calculate the age of the universe, shall we? This can be done easily using the Hubble constant, which is the rate at which the universe is expanding. We'll assume a value for this constant of 73 km/s/megaparsec:
+```fsharp
+let hubble = 73 @ km/s/megaparsec
+```
+Here we've used the `@` operator to create a measurement. The difference between `@` and `*` is subtle, but important:
+```fsharp
+let meas = 12 @ inch   // a measurement of 12 inches
+let unit = 12 * inch   // a unit of 12 inches (i.e. the foot)
+```
+The base units of the Hubble constant are 1/seconds (or s^-1), and the reciprocal of the Hubbl
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5OTAzMTUxMDUsLTY1NTk3MTYzNSw2Nz
-YxNzc0NDUsOTUzODY0MzA4XX0=
+eyJoaXN0b3J5IjpbOTA0Njg1Njc2LC0xODI0NjkxOTU1LC0xOT
+kwMzE1MTA1LC02NTU5NzE2MzUsNjc2MTc3NDQ1LDk1Mzg2NDMw
+OF19
 -->
