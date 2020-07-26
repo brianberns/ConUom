@@ -2,6 +2,7 @@ namespace ConUom.Test
 
 open System
 open System.Linq
+open System.Net
 
 open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
@@ -105,11 +106,13 @@ type SampleCalculations () =
             1 @ g,
             (1 @ cm^3) * water)
         Assert.AreEqual(
-            59930.84215309883,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) * water => lb |> mfloat)
+            59930.84,
+            (10 @ ft) * (12 @ ft) * (8 @ ft) * water => lb |> mfloat,
+            0.01)
         Assert.AreEqual(
-            0.5339487791320047,
-            (2 @ ton) / ((10 @ ft) * (12 @ ft) * water) => ft |> mfloat)
+            0.5339,
+            (2 @ ton) / ((10 @ ft) * (12 @ ft) * water) => ft |> mfloat,
+            0.0001)
 
     [<TestMethod>]
     member __.Liquor() =
@@ -117,18 +120,21 @@ type SampleCalculations () =
         let beer = (12 @ floz) * (3.2m @ percent) * (water/alcohol)
         let magnum = 1.5m @ liter
         Assert.AreEqual(
-            14.074492562524341,
-            magnum * (13.5m @ percent) => !@beer |> mfloat)
+            14.07,
+            magnum * (13.5m @ percent) => !@beer |> mfloat,
+            0.01)
 
         let proof = 1N/200N * one
         let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
         Assert.AreEqual(
-            8.78372074090843481138500000,
-            junglejuice => percent |> mfloat)
+            8.78,
+            junglejuice => percent |> mfloat,
+            0.01)
 
         Assert.AreEqual(
-            10.83279809499848,
-            5 * (12 @ floz) * junglejuice => !@beer |> mfloat)
+            10.83,
+            5 * (12 @ floz) * junglejuice => !@beer |> mfloat,
+            0.01)
 
 [<TestClass>]
 type Parser () =
@@ -149,7 +155,7 @@ G :=             6.67430e-11 N m^2 / kg^2  // gravity
 planck_mass :=          (hbar c / G)^(1/2)"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["planck_mass"]
-        Assert.AreEqual(2.1764343427179E-08, float unit.Scale)
+        Assert.AreEqual(2.1764e-8, float unit.Scale, 0.0001e-8)
         assertEq(
             [ BaseUnit("mass", "kg"), 1],
             unit.BaseUnits)
@@ -197,7 +203,7 @@ hubble_constant := 67.8 km/s/megaparsec
 age_of_universe = 1/hubble_constant"
         msgOpt |> Option.iter Assert.Fail
         let unit = lookup.Units.["age_of_universe"]
-        Assert.AreEqual(4.551146875355999E+17, float unit.Scale)
+        Assert.AreEqual(4.5511e17, float unit.Scale, 0.0001e17)
         assertEq(
             [ BaseUnit("time", "s"), 1 ],
             unit.BaseUnits)
@@ -222,7 +228,7 @@ lightyear := c (365 + 1/4) day"
     [<TestMethod>]
     member __.ParseUrl() =
 
-        use client = new System.Net.WebClient()
+        use client = new WebClient()
         let lookup, msgOpt =
             client.DownloadString("https://frinklang.org/frinkdata/units.txt")
                 |> Frink.parse
@@ -235,4 +241,4 @@ lightyear := c (365 + 1/4) day"
 
         let hubble = 73 @ km/s/megaparsec
         let universe = 1/hubble => gigayear
-        printfn "universe: %A" <| float universe.Value
+        Assert.AreEqual(13.39, float universe.Value, 0.01)
