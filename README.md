@@ -63,14 +63,15 @@ Console.WriteLine((double)nSmoots.Value);
 ## F# example
 ConUom is written in F# and there are several advantages to using its F# API as well. To start with, we can parse the Frink data file, just like in C#:
 ```fsharp
-use client = new System.Net.WebClient()
+use client = new WebClient()
 let lookup, msgOpt =
     client.DownloadString("https://frinklang.org/frinkdata/units.txt")
         |> Frink.parse
 msgOpt |> Option.iter Assert.Fail
 ```
+Note that this version of the parser returns an `Option<string>` that contains an error message if the parse fails, in addition to the same `UnitLookup` we saw earlier.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNDg1MjE2NjgwLC0xODI0NjkxOTU1LC0xOT
-kwMzE1MTA1LC02NTU5NzE2MzUsNjc2MTc3NDQ1LDk1Mzg2NDMw
-OF19
+eyJoaXN0b3J5IjpbLTIxMzcyNDM4NTQsLTE4MjQ2OTE5NTUsLT
+E5OTAzMTUxMDUsLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0
+MzA4XX0=
 -->
