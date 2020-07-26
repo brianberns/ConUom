@@ -85,10 +85,11 @@ let hubble = 73 @ km/s/megaparsec
 Here we've used the `@` operator to create a measurement. The difference between `@` and `*` is subtle, but important:
 ```fsharp
 let meas = 12 @ inch   // a measurement of 12 inches
-let unit = 12 * inch   // a unit of 12 inches
+let unit = 12 * inch   // a unit of 12 inches (i.e. the foot)
 ```
+The base units of the Hubble constant are 1/seconds (or s^-1), and the reciprocal of the Hubbl
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTY2Mzc0NDYyMCwtMTgyNDY5MTk1NSwtMT
-k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
-MDhdfQ==
+eyJoaXN0b3J5IjpbOTA0Njg1Njc2LC0xODI0NjkxOTU1LC0xOT
+kwMzE1MTA1LC02NTU5NzE2MzUsNjc2MTc3NDQ1LDk1Mzg2NDMw
+OF19
 -->
