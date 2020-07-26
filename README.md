@@ -87,7 +87,7 @@ Here we've used the `@` operator to create a measurement. The difference between
 let meas = 12 @ inch   // a measurement of 12 inches
 let unit = 12 * inch   // a unit of 12 inches (i.e. the foot)
 ```
-The base units of the Hubble constant are 1/seconds (or s^-1), and the reciprocal of the Hubble constant is the age of the universe in seconds. Since that's a very large number, we convert it to billions of years using the `=>` operator:
+The base units of the Hubble constant are 1/seconds (or s<sup>-1</sup>), and the reciprocal of the Hubble constant is the age of the universe in seconds. Since that's a very large number, we convert it to billions of years using the `=>` operator:
 ```fsharp
 let universe = 1/hubble => gigayear
 printfn "%A" <| float universe.Value
@@ -95,7 +95,7 @@ printfn "%A" <| float universe.Value
 ```
 Thus, by this calculation, the universe is approximately 13.4 billion years old.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTk2NDExMDM5OSwtMTgyNDY5MTk1NSwtMT
-k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
-MDhdfQ==
+eyJoaXN0b3J5IjpbLTE4NzA2ODIzODQsLTk2NDExMDM5OSwtMT
+gyNDY5MTk1NSwtMTk5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3
+NzQ0NSw5NTM4NjQzMDhdfQ==
 -->
