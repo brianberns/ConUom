@@ -82,9 +82,13 @@ Let's use these units to calculate the age of the universe, shall we? This can b
 ```fsharp
 let hubble = 73 @ km/s/megaparsec
 ```
-Here we've used the `@` operator to create a measurement.
+Here we've used the `@` operator to create a measurement. The difference between `@` and `*` is subtle, but important:
+```fsharp
+let meas = 12 @ inch   // a measurement of 12 inches
+let unit = 12 * inch   // a unit of 12 inches
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4NjkwNTI3MDMsLTE4MjQ2OTE5NTUsLT
-E5OTAzMTUxMDUsLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0
-MzA4XX0=
+eyJoaXN0b3J5IjpbMTY2Mzc0NDYyMCwtMTgyNDY5MTk1NSwtMT
+k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
+MDhdfQ==
 -->
