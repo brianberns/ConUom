@@ -87,11 +87,11 @@ type Measurement(value, unit) =
 
     /// Inverts a measurement.
     static member(/)(value, meas : Measurement) =
-        meas / (value |> BigRational.FromInt)
+        (value |> BigRational.FromInt) / meas
 
     /// Inverts a measurement.
     static member(/)(value, meas : Measurement) =
-        meas / (value |> BigRational.FromDecimal)
+        (value |> BigRational.FromDecimal) / meas
 
     /// Converts the given measurement to the given unit.
     static member (=>)(meas : Measurement, unit) =

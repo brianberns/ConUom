@@ -228,31 +228,11 @@ lightyear := c (365 + 1/4) day"
                 |> Frink.parse
         msgOpt |> Option.iter Assert.Fail
 
-        let liter = lookup?liter
-        let percent = lookup?percent
-        let floz = lookup?floz
-        let gal = lookup?gal
-        let water = lookup?water
-        let alcohol = lookup?alcohol
-        let proof = lookup?proof
+        let km = lookup?km
+        let megaparsec = lookup?megaparsec
+        let s = lookup?s
+        let gigayear = lookup?gigayear   // billions of years
 
-        let mfloat (meas : Measurement) = meas.Value |> float
-
-        let beer = (12 * floz) * (3.2m * percent) * (water/alcohol)
-        let magnum = 1.5m @ liter
-        Assert.AreEqual(
-            14.074492562524341,
-            magnum * (13.5m @ percent) => beer |> mfloat)
-
-        let junglejuice = (1.75m @ liter) * (190 @ proof) / (5 @ gal)
-        Assert.AreEqual(
-            8.78372074090843481138500000,
-            junglejuice => percent |> mfloat)
-
-        Assert.AreEqual(
-            10.83279809499848,
-            5 * (12 @ floz) * junglejuice => beer |> mfloat)
-
-        Assert.ThrowsException(
-            Action(fun () -> lookup?moo |> ignore))
-                |> ignore
+        let hubble = 73 @ km/s/megaparsec
+        let universe = 1/hubble => gigayear
+        printfn "universe: %A" <| float universe.Value
