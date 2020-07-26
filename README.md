@@ -61,7 +61,7 @@ Console.WriteLine((double)nSmoots.Value);
 ```
  Almost exactly 2!
 ## F# example
-ConUom is written in F# and there are several advantages to using its F# API as well. To start with, we can parse the Frink data file, just like in C#:
+ConUom is written in F# and there are several benefits to using its F# API as well. To start with, we can parse the Frink data file, much like we did above in C#:
 ```fsharp
 use client = new WebClient()
 let lookup, msgOpt =
@@ -95,7 +95,7 @@ printfn "%A" <| float universe.Value
 ```
 Thus, by this calculation, the universe is approximately 13.4 billion years old.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjIxMjE1NDMwLC0xODI0NjkxOTU1LC0xOT
-kwMzE1MTA1LC02NTU5NzE2MzUsNjc2MTc3NDQ1LDk1Mzg2NDMw
-OF19
+eyJoaXN0b3J5IjpbLTk2NDExMDM5OSwtMTgyNDY5MTk1NSwtMT
+k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
+MDhdfQ==
 -->
