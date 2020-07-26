@@ -62,7 +62,7 @@ type Unit private (baseMap, scale) =
         Unit(1N)
 
     /// Display string.
-    member unit.String =
+    member private unit.String =
         let scaleStr = sprintf "%A" <| float unit.Scale
         if unit.BaseMap.IsEmpty then
             scaleStr

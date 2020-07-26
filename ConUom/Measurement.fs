@@ -16,7 +16,7 @@ type Measurement(value, unit) =
         unit
 
     /// Display string.
-    member this.String =
+    member private this.String =
         sprintf "%A @ %A" this.Value this.Unit
 
     /// Display string.
