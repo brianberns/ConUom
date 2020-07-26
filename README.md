@@ -70,8 +70,11 @@ let lookup, msgOpt =
 msgOpt |> Option.iter Assert.Fail
 ```
 Note that this version of the parser returns an `Option<string>` that contains an error message if the parse fails, in addition to the same `UnitLookup` we saw earlier.
+This lookup can then be accessed using F#'s dynamic `?` operator:
+```fsharp
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIxMzcyNDM4NTQsLTE4MjQ2OTE5NTUsLT
-E5OTAzMTUxMDUsLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0
-MzA4XX0=
+eyJoaXN0b3J5IjpbLTYxMDY3MzA3NCwtMTgyNDY5MTk1NSwtMT
+k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
+MDhdfQ==
 -->
