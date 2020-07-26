@@ -61,7 +61,7 @@ Console.WriteLine((double)nSmoots.Value);
 ```
  Almost exactly 2!
 ## F# example
-ConUom is written in F# and there are several advantages to using its F# API as well. To start with, we can parse the Frink data file, just like in C#:
+ConUom is written in F# and there are several benefits to using its F# API as well. To start with, we can parse the Frink data file, much like we did above in C#:
 ```fsharp
 use client = new WebClient()
 let lookup, msgOpt =
@@ -87,9 +87,15 @@ Here we've used the `@` operator to create a measurement. The difference between
 let meas = 12 @ inch   // a measurement of 12 inches
 let unit = 12 * inch   // a unit of 12 inches (i.e. the foot)
 ```
-The base units of the Hubble constant are 1/seconds (or s^-1), and the reciprocal of the Hubbl
+The base units of the Hubble constant are 1/seconds (or s^-1), and the reciprocal of the Hubble constant is the age of the universe in seconds. Since that's a very large number, we convert it to billions of years using the `=>` operator:
+```fsharp
+let universe = 1/hubble => gigayear
+printfn "%A" <| float universe.Value
+// Output: 13.39470009
+```
+Thus, by this calculation, the universe is approximately 13.4 billion years old.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTA0Njg1Njc2LC0xODI0NjkxOTU1LC0xOT
-kwMzE1MTA1LC02NTU5NzE2MzUsNjc2MTc3NDQ1LDk1Mzg2NDMw
-OF19
+eyJoaXN0b3J5IjpbLTk2NDExMDM5OSwtMTgyNDY5MTk1NSwtMT
+k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
+MDhdfQ==
 -->
