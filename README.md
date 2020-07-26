@@ -91,10 +91,11 @@ The base units of the Hubble constant are 1/seconds (or s^-1), and the reciproca
 ```fsharp
 let universe = 1/hubble => gigayear
 printfn "%A" <| float universe.Value
-// o
+// Output: 13.39470009
 ```
+Thus, by this calculation, the universe is approximately 13.4 billion years old.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5MzA0MzM0ODcsLTE4MjQ2OTE5NTUsLT
-E5OTAzMTUxMDUsLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0
-MzA4XX0=
+eyJoaXN0b3J5IjpbMjIxMjE1NDMwLC0xODI0NjkxOTU1LC0xOT
+kwMzE1MTA1LC02NTU5NzE2MzUsNjc2MTc3NDQ1LDk1Mzg2NDMw
+OF19
 -->
