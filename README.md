@@ -78,9 +78,13 @@ let s = lookup?s
 let gigayear = lookup?gigayear   // billions of years
 ```
 Note that we can look up "gigayear" even though it is not explicitly defined in the Frink file, because "giga" is a known prefix (meaning 1 billion) and "year" is a known unit.
-Let's use these units to calculate the age of the universe, shall we? This can be done easily using the Hubble constant, which is the rate at which the universe is expanding. One possible value for this constant is 
+Let's use these units to calculate the age of the universe, shall we? This can be done easily using the Hubble constant, which is the rate at which the universe is expanding. We'll assume a value for this constant of 73 km/s/megaparsec:
+```fsharp
+let hubble = 73 @ km/s/megaparsec
+```
+Here we've used the `@` operator to create a measurement.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExODU2MDM4NzMsLTE4MjQ2OTE5NTUsLT
+eyJoaXN0b3J5IjpbLTE4NjkwNTI3MDMsLTE4MjQ2OTE5NTUsLT
 E5OTAzMTUxMDUsLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0
 MzA4XX0=
 -->
