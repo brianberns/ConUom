@@ -60,7 +60,10 @@ Console.WriteLine((double)nSmoots.Value);
 // Output: 1.999568447856973
 ```
  Almost exactly 2!
+## F# example
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4MjQ2OTE5NTUsLTE5OTAzMTUxMDUsLT
-Y1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0MzA4XX0=
+eyJoaXN0b3J5IjpbLTEzNTI1Nzk0MjQsLTE4MjQ2OTE5NTUsLT
+E5OTAzMTUxMDUsLTY1NTk3MTYzNSw2NzYxNzc0NDUsOTUzODY0
+MzA4XX0=
 -->
