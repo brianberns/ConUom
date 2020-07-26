@@ -72,9 +72,15 @@ msgOpt |> Option.iter Assert.Fail
 Note that this version of the parser returns an `Option<string>` that contains an error message if the parse fails, in addition to the same `UnitLookup` we saw earlier.
 This lookup can then be accessed using F#'s dynamic `?` operator:
 ```fsharp
+let km = lookup?km
+let megaparsec = lookup?megaparsec
+let s = lookup?s
+let gigayear = lookup?gigayear   // billions of years
 ```
+Note that we can look up "gigayear" even though it is not explicitly defined in the Frink file, because "giga" is a known prefix (meaning 1 billion) and "year" is a known unit.
+Let's use these units to calculate the age of the universe, shall we? 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTYxMDY3MzA3NCwtMTgyNDY5MTk1NSwtMT
+eyJoaXN0b3J5IjpbLTE1MzYyODU0NywtMTgyNDY5MTk1NSwtMT
 k5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3NzQ0NSw5NTM4NjQz
 MDhdfQ==
 -->
