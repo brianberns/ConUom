@@ -31,6 +31,25 @@ type Measurement(value, unit) =
             meas.Value * meas.Unit.Scale / unit.Scale
         Measurement(value, unit)
 
+    /// Converts the given measurement to the given unit.
+    static member (=>)(meas : Measurement, unit) =
+        meas.ConvertTo(unit)
+
+    /// Negates a measurement.
+    static member (~-)(meas : Measurement) =
+        Measurement(-meas.Value, meas.Unit)
+
+    /// Adds two measurements.
+    static member (+)(measA : Measurement, measB : Measurement) =
+        let measB' = measB => measA.Unit
+        Measurement(
+            measA.Value + measB'.Value,
+            measA.Unit)
+
+    /// Subtracts one measurement from another.
+    static member (-)(measA : Measurement, measB : Measurement) =
+        measA + (-measB)
+
     /// Multiplies two measurements. E.g. 10 ft * 12 ft = 120 ft^2.
     static member (*)(measA : Measurement, measB : Measurement) =
         Measurement(
@@ -92,10 +111,6 @@ type Measurement(value, unit) =
     /// Inverts a measurement.
     static member(/)(value, meas : Measurement) =
         (value |> BigRational.FromDecimal) / meas
-
-    /// Converts the given measurement to the given unit.
-    static member (=>)(meas : Measurement, unit) =
-        meas.ConvertTo(unit)
 
     /// Creates a unit from the given measurement.
     static member (!@)(meas : Measurement) =
