@@ -562,6 +562,7 @@ module FrinkAutoOpen =
                 failwithf "No such unit: %s" name)
 
 /// C# API.
+[<AbstractClass; Sealed>]   // appear as a static class to C# clients
 type Frink =
 
     /// Tries to parse the given Frink declarations.
