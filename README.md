@@ -1,9 +1,9 @@
 # ConUom
 ConUom is a .NET Core library that allows you to define units of measure and then convert between them in C# or F#.
 ## C# example
-Let's start by defining the meter as a base unit of length:
+Let's start by defining the meter as a base unit:
 ```csharp
-var m = new Unit("Length", "m");
+var m = new Unit("m");
 ```
 We can then derive new units in terms of existing units. For example, a centimeter is 1/100<sup>th</sup> of a meter:
 ```csharp
@@ -94,8 +94,3 @@ printfn "%A" <| float universe.Value
 // Output: 13.39470009
 ```
 Thus, by this calculation, the universe is approximately 13.4 billion years old.
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4NzA2ODIzODQsLTk2NDExMDM5OSwtMT
-gyNDY5MTk1NSwtMTk5MDMxNTEwNSwtNjU1OTcxNjM1LDY3NjE3
-NzQ0NSw5NTM4NjQzMDhdfQ==
--->

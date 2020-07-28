@@ -19,8 +19,8 @@ namespace ConUom.CS.Test
         [TestMethod]
         public void Area()
         {
-            // define the meter as a base unit of length
-            var m = new Unit("Length", "m");
+            // define the meter as a base unit
+            var m = new Unit("m");
 
             // define an inch in terms of centimeters
             var cm = 0.01m * m;

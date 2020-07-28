@@ -19,10 +19,10 @@ type SampleCalculations () =
     let one = Unit.One
     let percent = centi * one
 
-    let m = Unit("Length", "m")
+    let m = Unit("m")
     let cm = centi * m
 
-    let kg = Unit("Mass", "kg")
+    let kg = Unit("kg")
     let g = milli * kg
 
     let cc = 1N * (cm^3)
@@ -157,7 +157,7 @@ planck_mass :=          (hbar c / G)^(1/2)"
         let unit = lookup.Units.["planck_mass"]
         Assert.AreEqual(2.1764e-8, float unit.Scale, 0.0001e-8)
         assertEq(
-            [ BaseUnit("mass", "kg"), 1],
+            [ "kg", 1],
             unit.BaseUnits)
 
     [<TestMethod>]
@@ -172,9 +172,9 @@ m^2  kg s^-3 ||| power"
         Assert.AreEqual(1N, unit.Scale)
         assertEq(
             [
-                BaseUnit("length", "m"), 2
-                BaseUnit("mass", "kg"), 1
-                BaseUnit("time", "s"), -3
+                "m", 2
+                "kg", 1
+                "s", -3
             ],
             unit.BaseUnits)
 
@@ -205,7 +205,7 @@ age_of_universe = 1/hubble_constant"
         let unit = lookup.Units.["age_of_universe"]
         Assert.AreEqual(4.5511e17, float unit.Scale, 0.0001e17)
         assertEq(
-            [ BaseUnit("time", "s"), 1 ],
+            [ "s", 1 ],
             unit.BaseUnits)
 
     [<TestMethod>]
@@ -222,7 +222,7 @@ lightyear := c (365 + 1/4) day"
         let unit = lookup.Units.["lightyear"]
         Assert.AreEqual(9460730472580800N, unit.Scale)
         assertEq(
-            [ BaseUnit("length", "m"), 1 ],
+            [ "m", 1 ],
             unit.BaseUnits)
 
     [<TestMethod>]

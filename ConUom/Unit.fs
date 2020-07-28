@@ -5,28 +5,16 @@ open System.Collections.Immutable
 
 open MathNet.Numerics
 
-/// A base unit used to measure a dimension.
-[<Struct>]
-[<StructuredFormatDisplay("{Name}")>]
-type BaseUnit(dimension : string, name : string) =
-
-    /// Dimension measured by this base unit.
-    member __.Dimension = dimension
-
-    /// Name of this base unit.
-    member __.Name = name
-
-    /// Display string.
-    override unit.ToString() =
-        unit.Name
+/// E.g. "m" for meter or "s" for second.
+type BaseUnit = string
 
 /// A unit of measurement.
 [<StructuredFormatDisplay("{String}")>]
 type Unit private (baseMap, scale) =
 
     /// Creates a base unit.
-    new(dim, name) =
-        let baseMap = Map [ BaseUnit(dim, name), 1 ]
+    new(name) =
+        let baseMap = Map [ name, 1 ]
         Unit(baseMap, 1N)
 
     /// Creates a dimensionless unit of the given scale.
@@ -71,9 +59,8 @@ type Unit private (baseMap, scale) =
                 let names =
                     unit.BaseMap
                         |> Seq.map (fun (KeyValue(baseUnit, power)) ->
-                            let name = baseUnit.Name
-                            if power = 1 then name
-                            else sprintf "%s^%d" name power)
+                            if power = 1 then baseUnit
+                            else sprintf "%s^%d" baseUnit power)
                 String.Join(" ", names)
             if unit.Scale = 1N then
                 units

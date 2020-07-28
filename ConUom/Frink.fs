@@ -469,12 +469,12 @@ module private FrinkParser =
         /// Parses the declaration of a base unit. E.g. "length =!= m".
         let parseBaseDecl =
             parse {
-                let! dim = identifier
+                let! dim = identifier   // not used
                 do! spaces
                 do! skipString "=!="
                 do! spaces
                 let! name = identifier
-                return name, Unit(dim, name)
+                return name, Unit(name)
             } |> attempt
 
         /// Parses the declaration of a derived unit.
