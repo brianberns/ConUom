@@ -25,7 +25,7 @@ type Measurement(value, unit) =
 
     /// Converts this measurement to the given unit.
     member meas.ConvertTo(unit : Unit) =
-        if unit.BaseMap <> meas.Unit.BaseMap then   // no direct collection equality
+        if unit.BaseMap <> meas.Unit.BaseMap then
             failwithf "Can't convert '%A' to '%A'" meas.Unit unit
         let value =
             meas.Value * meas.Unit.Scale / unit.Scale
