@@ -27,6 +27,8 @@ type Measurement(value, unit) =
     member meas.ConvertTo(unit : Unit) =
         if unit.BaseMap <> meas.Unit.BaseMap then
             failwithf "Can't convert '%A' to '%A'" meas.Unit unit
+        if unit.Scale = 0N then
+            failwithf "Can't convert to zero unit '%A'" unit
         let value =
             meas.Value * meas.Unit.Scale / unit.Scale
         Measurement(value, unit)

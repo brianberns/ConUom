@@ -12,9 +12,8 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
+    <PackageReference Include="FsCheck" Version="2.14.3" />
     <PackageReference Include="MathNet.Numerics" Version="4.11.0" />
     <PackageReference Include="MathNet.Numerics.FSharp" Version="4.11.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />

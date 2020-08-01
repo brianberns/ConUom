@@ -6,6 +6,7 @@ open System.Net
 
 open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
+open FsCheck
 open ConUom
 
 /// Sample calculations:
@@ -242,3 +243,109 @@ lightyear := c (365 + 1/4) day"
         let hubble = 73 @ km/s/megaparsec
         let universe = 1/hubble => gigayear
         Assert.AreEqual(13.39, float universe.Value, 0.01)
+
+type MyGenerators () =
+
+    static member BigRational () =
+
+        let genRational =
+            gen {
+                let! n = Arb.generate<int>
+                let! d = Arb.generate<NonZeroInt>
+                return BigRational.FromIntFraction(n, d.Get)
+            }
+
+        {
+            new Arbitrary<BigRational>() with
+                override __.Generator = genRational
+        }
+
+    static member Unit() =
+
+        let genBaseUnit =
+            gen {
+                let! name =
+                    Gen.choose(0, 25)
+                        |> Gen.map (fun i ->
+                            int 'a' + i
+                                |> char
+                                |> string)
+                return Unit(name)
+            }
+
+        let genDimensionlessRationalUnit =
+            gen {
+                let! scale = Arb.generate<BigRational>
+                return Unit(scale)
+            }
+
+        let genDimensionlessDecimalUnit =
+            gen {
+                let! scale = Arb.generate<decimal>
+                return Unit(scale)
+            }
+
+        let genDimensionlessIntUnit =
+            gen {
+                let! scale = Arb.generate<int>
+                return Unit(scale)
+            }
+
+        let genDimensionlessUnit =
+            Gen.oneof [
+                genDimensionlessRationalUnit
+                genDimensionlessDecimalUnit
+                genDimensionlessIntUnit
+            ]
+
+        let genDerivedUnit units =
+            gen {
+                let len = units |> Array.length
+                let! i = Gen.choose(0, len - 1)
+                let unit = units.[i]
+                let! scale = genDimensionlessUnit
+                return scale * unit
+            }
+
+        let genUnit units =
+            Gen.frequency [
+                1, genBaseUnit
+                1, genDimensionlessUnit
+                // 1, genDerivedUnit units
+            ]
+
+        {
+            new Arbitrary<Unit>() with
+                override __.Generator = genUnit Array.empty
+        }
+
+[<TestClass>]
+type FsCheck () =
+
+    let equalUnits (unitA : Unit) (unitB : Unit) =
+        unitA.Scale = unitB.Scale
+            && unitA.BaseUnits.SequenceEqual(unitB.BaseUnits)
+
+    let equalMeasurements (measA : Measurement) (measB : Measurement) =
+        measA.Value = measB.Value
+            && equalUnits measA.Unit measB.Unit
+
+    let isConvertible (meas : Measurement) unit =
+        let converted = meas => unit
+        let convertedBack = converted => meas.Unit
+        equalMeasurements convertedBack meas
+
+    let check (meas : Measurement) (unit : Unit) =
+        let condition =
+            meas.Unit.BaseUnits.SequenceEqual(unit.BaseUnits)
+                && meas.Unit.Scale <> 0N
+                && unit.Scale <> 0N
+        condition ==> lazy isConvertible meas unit
+
+    [<ClassInitialize>]
+    static member Init(context : TestContext) =
+        Arb.register<MyGenerators>() |> ignore
+
+    [<TestMethod>]
+    member __.Test() =
+        Check.QuickThrowOnFailure(check)
