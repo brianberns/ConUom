@@ -9,6 +9,7 @@
     <RepositoryUrl>https://github.com/brianberns/ConUom</RepositoryUrl>
     <PackageLicenseFile>License</PackageLicenseFile>
     <PackageIcon>Icon.png</PackageIcon>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
