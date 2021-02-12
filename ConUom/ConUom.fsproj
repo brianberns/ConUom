@@ -26,7 +26,6 @@
       <PackagePath></PackagePath>
     </None>
     <None Include="License" />
-    <Compile Include="BigRational.fs" />
     <Compile Include="Unit.fs" />
     <Compile Include="Measurement.fs" />
     <Compile Include="Frink.fs" />
