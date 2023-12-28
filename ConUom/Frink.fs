@@ -75,7 +75,7 @@ module private Debug =
         fun stream ->
             printfn "%A: Entering %s" stream.Position label
             let reply = p stream
-            printfn "%A: Leaving %s (%A: %A)" stream.Position label reply.Status reply.Result
+            printfn "%A: Leaving %s (%A)" stream.Position label reply.Status
             reply
 #endif
 
@@ -375,7 +375,7 @@ module private FrinkParser =
             choice [
                 parseQuotient
                 parseQuotientable
-            ]
+            ] |> acceptParenthesized
 
         /// Parses a product. E.g. "1200/3937 m/ft".
         let parseProduct =
