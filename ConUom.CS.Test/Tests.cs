@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using System.Net;
-
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConUom.CS.Test
@@ -42,11 +42,11 @@ namespace ConUom.CS.Test
         }
 
         [TestMethod]
-        public void WmbrInSmoots()
+        public async Task WmbrInSmoots()
         {
             // download and parse standard units
-            using var client = new WebClient();
-            var str = client.DownloadString("https://frinklang.org/frinkdata/units.txt");
+            using var client = new HttpClient();
+            var str = await client.GetStringAsync("https://frinklang.org/frinkdata/units.txt");
             var success = Frink.TryParse(str, out UnitLookup lookup);
             Assert.IsTrue(success);
 

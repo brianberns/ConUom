@@ -2,7 +2,7 @@ namespace ConUom.Test
 
 open System
 open System.Linq
-open System.Net
+open System.Net.Http
 
 open Microsoft.VisualStudio.TestTools.UnitTesting
 open MathNet.Numerics
@@ -229,10 +229,12 @@ lightyear := c (365 + 1/4) day"
     [<TestMethod>]
     member __.ParseUrl() =
 
-        use client = new WebClient()
+        use client = new HttpClient()
         let lookup, msgOpt =
-            client.DownloadString("https://frinklang.org/frinkdata/units.txt")
-                |> Frink.parse
+            task {
+                let! str = client.GetStringAsync("https://frinklang.org/frinkdata/units.txt")
+                return Frink.parse str
+            } |> Async.AwaitTask |> Async.RunSynchronously
         msgOpt |> Option.iter Assert.Fail
 
         let km = lookup?km

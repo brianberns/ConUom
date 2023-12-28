@@ -6,10 +6,12 @@ module Program =
 
     [<EntryPoint>] 
     let main _ =
-        use client = new System.Net.WebClient()
+        use client = new System.Net.Http.HttpClient()
         let lookup, msgOpt =
-            client.DownloadString("https://frinklang.org/frinkdata/units.txt")
-                |> Frink.parse
+            task {
+                let! str = client.GetStringAsync("https://frinklang.org/frinkdata/units.txt")
+                return Frink.parse str
+            } |> Async.AwaitTask |> Async.RunSynchronously
         for (key, value) in lookup.Prefixes |> Map.toSeq do
             printfn "%s: %A" key value
         for (key, value) in lookup.Units |> Map.toSeq do

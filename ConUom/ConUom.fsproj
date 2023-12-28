@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Authors>Brian Berns</Authors>
     <Company>Bernsrite Industries</Company>
-    <Description>ConUom is a .NET Core library that allows you to define units of measure and then convert between them in C# or F#.</Description>
+    <Description>ConUom is a .NET library that allows you to define units of measure and then convert between them in C# or F#.</Description>
     <Copyright>Brian Berns</Copyright>
     <RepositoryUrl>https://github.com/brianberns/ConUom</RepositoryUrl>
     <PackageLicenseFile>License</PackageLicenseFile>
@@ -37,12 +37,8 @@
 
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
-    <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
-    <PackageReference Include="MathNet.Numerics.FSharp" Version="4.15.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0" />
   </ItemGroup>
 
 </Project>
