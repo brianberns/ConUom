@@ -52,7 +52,7 @@ type SampleCalculations () =
     let mfloat (meas : Measurement) = meas.Value |> float
 
     [<TestMethod>]
-    member __.FromDecimal() =
+    member _.FromDecimal() =
         let pairs =
             [
                 1M, 1N
@@ -74,7 +74,7 @@ type SampleCalculations () =
             Assert.AreEqual(rational, BigRational.FromDecimal decimal)
 
     [<TestMethod>]
-    member __.Length() =
+    member _.Length() =
         assertEq(
             5.08m @ cm,
             (2 @ inch) => cm)
@@ -83,7 +83,7 @@ type SampleCalculations () =
             (5.08m @ cm) => inch)
 
     [<TestMethod>]
-    member __.Area() =
+    member _.Area() =
         let ratio = BigRational.FromDecimal(2.54m)
         assertEq(
             6N * ratio * ratio @ cm^2,
@@ -93,7 +93,7 @@ type SampleCalculations () =
             (6N * ratio * ratio @ cm^2) => inch^2)
 
     [<TestMethod>]
-    member __.Volume() =
+    member _.Volume() =
         assertEq(
             552960N/77N @ gal,
             (10 @ ft) * (12 @ ft) * (8 @ ft) => gal)
@@ -102,7 +102,7 @@ type SampleCalculations () =
             (552960N/77N @ gal) => ft^3)
 
     [<TestMethod>]
-    member __.Density() =
+    member _.Density() =
         assertEq(
             1 @ g,
             (1 @ cm^3) * water)
@@ -116,7 +116,7 @@ type SampleCalculations () =
             0.0001)
 
     [<TestMethod>]
-    member __.Liquor() =
+    member _.Liquor() =
 
         let beer = (12 @ floz) * (3.2m @ percent) * (water/alcohol)
         let magnum = 1.5m @ liter
@@ -144,7 +144,7 @@ type Parser () =
         itemsA.SequenceEqual(itemsB)
 
     [<TestMethod>]
-    member __.ParsePlanckMass() =
+    member _.ParsePlanckMass() =
         let lookup, msgOpt = Frink.parse "length    =!= m // meter
 time      =!= s // second
 mass      =!=  kg   // kilogram
@@ -162,7 +162,7 @@ planck_mass :=          (hbar c / G)^(1/2)"
             unit.BaseUnits)
 
     [<TestMethod>]
-    member __.ParsePower() =
+    member _.ParsePower() =
         let lookup, msgOpt = Frink.parse "
 length =!= m
 time =!= s
@@ -180,7 +180,7 @@ m^2  kg s^-3 ||| power"
             unit.BaseUnits)
 
     [<TestMethod>]
-    member __.ParseSurvey() =
+    member _.ParseSurvey() =
         let unitMap, msgOpt = Frink.parse "
 length =!= m
 inch := 2.54ee-2 m
@@ -191,7 +191,7 @@ survey ::- 1200/3937 m/ft  // survey length ratio"
         Assert.AreEqual((1200N/3937N) / (3048N/10000N), scale)
 
     [<TestMethod>]
-    member __.ParseHubbleConstant() =
+    member _.ParseHubbleConstant() =
         let lookup, msgOpt = Frink.parse "
 mega ::- 1ee6
 length =!= m
@@ -210,7 +210,7 @@ age_of_universe = 1/hubble_constant"
             unit.BaseUnits)
 
     [<TestMethod>]
-    member __.ParseLightyear() =
+    member _.ParseLightyear() =
         let lookup, msgOpt = Frink.parse "
 length =!= m
 time =!= s
@@ -227,7 +227,7 @@ lightyear := c (365 + 1/4) day"
             unit.BaseUnits)
 
     [<TestMethod>]
-    member __.ParseUrl() =
+    member _.ParseUrl() =
 
         use client = new HttpClient()
         let lookup, msgOpt =
@@ -259,7 +259,7 @@ type MyGenerators () =
 
         {
             new Arbitrary<BigRational>() with
-                override __.Generator = genRational
+                override _.Generator = genRational
         }
 
     static member Unit() =
@@ -318,7 +318,7 @@ type MyGenerators () =
 
         {
             new Arbitrary<Unit>() with
-                override __.Generator = genUnit Array.empty
+                override _.Generator = genUnit Array.empty
         }
 
 [<TestClass>]
@@ -349,5 +349,5 @@ type FsCheck () =
         Arb.register<MyGenerators>() |> ignore
 
     [<TestMethod>]
-    member __.Test() =
+    member _.Test() =
         Check.QuickThrowOnFailure(check)

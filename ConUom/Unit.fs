@@ -31,12 +31,12 @@ type Unit private (baseMap, scale) =
 
     /// Base units that this unit derives from. E.g. Units
     /// of acceleration are based on: m^1, s^-2.
-    member internal __.BaseMap : Map<BaseUnit, int (*power*)> =
+    member internal _.BaseMap : Map<BaseUnit, int (*power*)> =
         baseMap
 
     /// Factor to convert from this unit to base units. E.g.
     /// 1000x for km -> m.
-    member __.Scale : BigRational =
+    member _.Scale : BigRational =
         scale
 
     /// Answers the given unit's set of base units.

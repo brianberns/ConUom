@@ -8,11 +8,11 @@ open MathNet.Numerics
 type Measurement(value, unit) =
 
     /// Value of this measurement. E.g. 3.
-    member __.Value : BigRational =
+    member _.Value : BigRational =
         value
 
     /// Unit of this measurement. E.g. Pounds.
-    member __.Unit : Unit =
+    member _.Unit : Unit =
         unit
 
     /// Display string.
