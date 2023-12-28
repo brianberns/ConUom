@@ -9,6 +9,7 @@
     <RepositoryUrl>https://github.com/brianberns/ConUom</RepositoryUrl>
     <PackageLicenseFile>License</PackageLicenseFile>
     <PackageIcon>Icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Version>1.1.0</Version>
   </PropertyGroup>
 
@@ -25,14 +26,14 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="License" />
-    <Compile Include="Unit.fs" />
-    <Compile Include="Measurement.fs" />
-    <Compile Include="Frink.fs" />
     <None Include="License">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+	<None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <Compile Include="Unit.fs" />
+    <Compile Include="Measurement.fs" />
+    <Compile Include="Frink.fs" />
   </ItemGroup>
 
   <ItemGroup>
