@@ -1,6 +1,8 @@
 ﻿namespace ConUom
 
+open System
 open System.Runtime.CompilerServices
+
 open MathNet.Numerics
 
 /// An individual measurement. E.g. 3 lbs.
@@ -23,15 +25,46 @@ type Measurement(value, unit) =
     override meas.ToString() =
         meas.String
 
-    /// Converts this measurement to the given unit.
-    member meas.ConvertTo(unit : Unit) =
+    /// Converts this measurement to the given unit, if possible.
+    member private meas.TryConvertTo(unit : Unit) =
         if unit.BaseMap <> meas.Unit.BaseMap then
-            failwithf "Can't convert '%A' to '%A'" meas.Unit unit
-        if unit.Scale = 0N then
-            failwithf "Can't convert to zero unit '%A'" unit
-        let value =
-            meas.Value * meas.Unit.Scale / unit.Scale
-        Measurement(value, unit)
+            Error (sprintf "Can't convert '%A' to '%A'" meas.Unit unit)
+        elif unit.Scale = 0N then
+            Error (sprintf "Can't convert to zero unit '%A'" unit)
+        else
+            let value =
+                meas.Value * meas.Unit.Scale / unit.Scale
+            Ok (Measurement(value, unit))
+
+    /// Converts this measurement to the given unit.
+    member meas.ConvertTo(unit) =
+        match meas.TryConvertTo(unit) with
+            | Ok meas -> meas
+            | Error msg -> failwith msg
+
+    /// Strongly-typed equality.
+    member meas.Equals(other : Measurement) =
+        match meas.TryConvertTo(other.Unit) with
+            | Ok meas -> meas.Value = other.Value
+            | Error _ -> false
+
+    /// Weakly-typed equality.
+    override meas.Equals(other) =
+        match other with
+            | :? Measurement as other -> meas.Equals(other)
+            | _ -> false
+
+    /// Strongly-typed equality.
+    interface IEquatable<Measurement> with
+        member meas.Equals(other) =
+            meas.Equals(other)
+
+    /// Hash code.
+    override unit.GetHashCode() =
+        let hash = HashCode()
+        hash.Add(unit.Value)
+        hash.Add(unit.Unit)
+        hash.ToHashCode()
 
     /// Converts the given measurement to the given unit.
     static member (=>)(meas : Measurement, unit) =

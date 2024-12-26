@@ -45,9 +45,7 @@ type SampleCalculations () =
     let alcohol = 0.7893m @ g/cc
 
     let assertEq(measA : Measurement, measB : Measurement) =
-        Assert.AreEqual(measA.Value, measB.Value)
-        Assert.IsTrue(measA.Unit.BaseUnits.SequenceEqual(measB.Unit.BaseUnits))
-        Assert.AreEqual(measA.Unit.Scale, measB.Unit.Scale)
+        Assert.AreEqual<Measurement>(measA, measB)
 
     let mfloat (meas : Measurement) = meas.Value |> float
 
@@ -75,31 +73,27 @@ type SampleCalculations () =
 
     [<TestMethod>]
     member _.Length() =
-        assertEq(
-            5.08m @ cm,
-            (2 @ inch) => cm)
-        assertEq(
-            2 @ inch,
-            (5.08m @ cm) => inch)
+        assertEq(5.08m @ cm, 2 @ inch)
+        assertEq(2 @ inch, 5.08m @ cm)
 
     [<TestMethod>]
     member _.Area() =
         let ratio = BigRational.FromDecimal(2.54m)
         assertEq(
             6N * ratio * ratio @ cm^2,
-            (2 @ inch) * (3 @ inch) => cm^2)
+            (2 @ inch) * (3 @ inch))
         assertEq(
             (2 @ inch) * (3 @ inch),
-            (6N * ratio * ratio @ cm^2) => inch^2)
+            6N * ratio * ratio @ cm^2)
 
     [<TestMethod>]
     member _.Volume() =
         assertEq(
             552960N/77N @ gal,
-            (10 @ ft) * (12 @ ft) * (8 @ ft) => gal)
+            (10 @ ft) * (12 @ ft) * (8 @ ft))
         assertEq(
             (10 @ ft) * (12 @ ft) * (8 @ ft),
-            (552960N/77N @ gal) => ft^3)
+            552960N/77N @ gal)
 
     [<TestMethod>]
     member _.Density() =
@@ -136,6 +130,11 @@ type SampleCalculations () =
             10.83,
             5 * (12 @ floz) * junglejuice => !@beer |> mfloat,
             0.01)
+
+    [<TestMethod>]
+    member _.Mixed() =
+        Assert.AreEqual<Unit>(13 * inch, ft + inch)
+        Assert.AreEqual<Measurement>(13 * (1 @ inch), (1 @ ft) + (1 @ inch))
 
 [<TestClass>]
 type Parser () =

@@ -39,6 +39,29 @@ type Unit private (baseMap, scale) =
     member _.Scale : BigRational =
         scale
 
+    /// Strongly-typed equality.
+    member unit.Equals(other : Unit) =
+        unit.BaseMap = other.BaseMap
+            && unit.Scale = other.Scale
+
+    /// Weakly-typed equality.
+    override unit.Equals(other) =
+        match other with
+            | :? Unit as other -> unit.Equals(other)
+            | _ -> false
+
+    /// Strongly-typed equality.
+    interface IEquatable<Unit> with
+        member unit.Equals(other) =
+            unit.Equals(other)
+
+    /// Hash code.
+    override unit.GetHashCode() =
+        let hash = HashCode()
+        hash.Add(unit.BaseMap)
+        hash.Add(unit.Scale)
+        hash.ToHashCode()
+
     /// Answers the given unit's set of base units.
     member unit.BaseUnits =
         unit.BaseMap
