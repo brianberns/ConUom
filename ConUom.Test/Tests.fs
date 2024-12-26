@@ -134,7 +134,7 @@ type SampleCalculations () =
     [<TestMethod>]
     member _.Mixed() =
         Assert.AreEqual<Unit>(13 * inch, ft + inch)
-        Assert.AreEqual<Measurement>(13 * (1 @ inch), (1 @ ft) + (1 @ inch))
+        assertEq(13 * (1 @ inch), (1 @ ft) + (1 @ inch))
 
 [<TestClass>]
 type Parser () =
