@@ -1,7 +1,7 @@
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConUom.CS.Test
@@ -9,13 +9,6 @@ namespace ConUom.CS.Test
     [TestClass]
     public class Tests
     {
-        static void AssertEq(Measurement measA, Measurement measB)
-        {
-            Assert.AreEqual(measA.Value, measB.Value, $"{measA.Value} vs. {measB.Value}");
-            Assert.IsTrue(measA.Unit.BaseUnits.SequenceEqual(measB.Unit.BaseUnits));
-            Assert.AreEqual(measA.Unit.Scale, measB.Unit.Scale);
-        }
-
         [TestMethod]
         public void Area()
         {
@@ -36,9 +29,8 @@ namespace ConUom.CS.Test
 
             // how much is that area in square meters?
             var areaSqM = areaSqYd.ConvertTo(m ^ 2);
-            Console.WriteLine($"{areaSqYd.Value} square yards = {(double)areaSqM.Value} square meters");   // Output: 8 square yards = 6.68901888 square meters
-            AssertEq((m ^ 2).Measure(6.68901888m), areaSqM);
-            AssertEq(areaSqYd, areaSqM.ConvertTo(yd ^ 2));
+            Assert.AreEqual((m ^ 2).Measure(6.68901888m), areaSqM);
+            Assert.AreEqual(areaSqYd, areaSqM);
         }
 
         [TestMethod]
